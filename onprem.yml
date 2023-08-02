@@ -1,0 +1,71 @@
+host: localhost
+port: 2020
+user: datamint
+password: 1234
+dbName: test
+
+firebaseCredFilePath: ./keys/bonsaiFirebase.json
+
+# Database settings.
+database:
+  # the name of the JDBC driver, mysql in our case
+  driverClass: com.mysql.cj.jdbc.Driver
+  # the username
+  user: root
+  # the password
+  password: 123456
+  # the JDBC URL; the database is called DWGettingStarted
+  url: jdbc:mysql://localhost:3306/hope?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+  # Hibernate properties
+  properties:
+    hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
+    hibernate.hbm2ddl.auto: update
+    hibernate.format_sql: true
+    hibernate.autoReconnect: true
+    # hibernate.show_sql: true
+
+  # The initial size of the connection pool
+  initialSize: 10
+  # the minimum number of connections to keep open
+  minSize: 10
+  # the maximum number of connections to keep open
+  maxSize: 100
+  # the maximum amount of time to wait on an empty pool before throwing an exception
+  maxWaitForConnection: 30s
+  # whether or not idle connections should be validated
+  # 处理连接异常（参考官网）
+  checkConnectionWhileIdle: true
+  checkConnectionOnBorrow: true
+  checkConnectionOnConnect: true
+  checkConnectionOnReturn: true
+
+logging:
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+  level: INFO
+
+  loggers:
+    bonsai: DEBUG
+    org.hibernate.SQL: ALL
+
+  appenders:
+    - type: file
+      currentLogFilename: ./logs/root.log
+      archivedLogFilenamePattern: ./logs/root-%d.log.gz
+      archivedFileCount: 2
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 3047
+  adminConnectors:
+    - type: http
+      port: 9091
+  requestLog:
+    appenders:
+      - type: file
+        currentLogFilename: ./logs/access.log
+        threshold: ALL
+        archive: true
+        archivedLogFilenamePattern: ./logs/access.%d.log.gz
+        archivedFileCount: 2
+
