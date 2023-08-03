@@ -19,6 +19,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 获取缩略图工具类
@@ -107,6 +109,56 @@ public class ThumbnailUtil {
             iis.close();
             outputStream.close();
         }
+    }
+
+    //把base64解码为图像
+    public static byte[] decode(String base64Str,String fileName,String filePath){
+        File file = null;
+        //创建文件目录
+        File  dir=new File(filePath);
+        if (!dir.exists() && !dir.isDirectory()) {
+            dir.mkdirs();
+        }
+        BufferedOutputStream bos = null;
+        java.io.FileOutputStream fos = null;
+
+        byte[] b = null;
+//        BASE64Decoder decoder = new BASE64Decoder();
+        try {
+            b = Base64.getMimeDecoder().decode(base64Str);
+            //window
+            //file=new File(filePath+"\\"+fileName);
+            //linux
+            file=new File(filePath+"/"+fileName);
+            fos = new java.io.FileOutputStream(file);
+            bos = new BufferedOutputStream(fos);
+            bos.write(b);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return b;
+    }
+
+    public static String replaceEnter(String str){
+        String reg ="[\n-\r]";
+        Pattern p = Pattern.compile(reg);
+        Matcher m = p.matcher(str);
+        return m.replaceAll("");
     }
 
     // 根据原始文件类型返回图片格式

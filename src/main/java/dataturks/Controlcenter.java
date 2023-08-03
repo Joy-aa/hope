@@ -19,6 +19,9 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 
@@ -353,14 +356,19 @@ public class Controlcenter {
             DHits hit = AppConfig.getInstance().getdHitsDAO().findByIdInternal(Long.parseLong(hitId));
             GetHits getHits = new GetHits();
             if(hit != null) {
-                String hitPath = ThumbnailUtil.getOriginalImgUrl(hit.getData());
-                int idx = hitPath.indexOf("___");
-                String hitName = hitPath.substring(idx+3, hitPath.length());
-                idx = hitName.indexOf('.');
-                String hitStem = hitName.substring(0, idx);
-                String labelPath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR) + "/" + hitStem + ".png";
-                AppConfig.getInstance().getdHitsDAO().updateHitById(hit.getId(), labelPath);
-                hit.setExtras(labelPath);
+                Path url = Paths.get(hit.getData());
+                String hitName = url.getFileName().toString();
+                int idx = hitName.indexOf("___");
+                String imgName = hitName.substring(idx+3);
+                String imgStem = imgName.substring(0, imgName.indexOf('.'));
+                String newImgName = imgStem + ".png";
+                // storagePath 的值从数据库查询
+                String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
+                // 拼接文件夹的全路径
+                Path folderPath = Paths.get(storagePath);
+                String newUrl = "/" + folderPath.getFileName() + "/" + newImgName;
+                AppConfig.getInstance().getdHitsDAO().updateHitById(hit.getId(), newUrl);
+                hit.setExtras(newUrl);
                 getHits.addSigleHit(hit, null);
                 return getHits;
             }
@@ -388,14 +396,19 @@ public class Controlcenter {
                     for (DHits hit : dHits) {
                         LOG.info("wangjiawangjia3"+hit);
                         // 获取数据集中所有的图片
-                        String hitPath = ThumbnailUtil.getOriginalImgUrl(hit.getData());
-                        int idx = hitPath.indexOf("___");
-                        String hitName = hitPath.substring(idx+3, hitPath.length());
-                        idx = hitName.indexOf('.');
-                        String hitStem = hitName.substring(0, idx);
-                        String labelPath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR) + "/" + hitStem + ".png";
-                        AppConfig.getInstance().getdHitsDAO().updateHitById(hit.getId(), labelPath);
-                        hit.setExtras(labelPath);
+                        Path url = Paths.get(hit.getData());
+                        String hitName = url.getFileName().toString();
+                        int idx = hitName.indexOf("___");
+                        String imgName = hitName.substring(idx+3);
+                        String imgStem = imgName.substring(0, imgName.indexOf('.'));
+                        String newImgName = imgStem + ".png";
+                        // storagePath 的值从数据库查询
+                        String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
+                        // 拼接文件夹的全路径
+                        Path folderPath = Paths.get(storagePath);
+                        String newUrl = "/" + folderPath.getFileName() + "/" + newImgName;
+                        AppConfig.getInstance().getdHitsDAO().updateHitById(hit.getId(), newUrl);
+                        hit.setExtras(newUrl);
                         getHits.addSigleHit(hit, null);
                     }
                 }
@@ -522,6 +535,25 @@ public class Controlcenter {
             DHits hit = AppConfig.getInstance().getdHitsDAO().findByIdInternal(hitId);
             if (hit == null) {
                 throw new WebApplicationException("No such hit found", Response.Status.NOT_FOUND);
+            }
+
+            if(reqObj.getReqMap().containsKey("base64Str")) {
+                String base64Str = reqObj.getReqMap().get("base64Str");
+                Path url = Paths.get(hit.getData());
+//                Path fileName = url.getFileName();
+                String fileName = ThumbnailUtil.getOriginalImgUrl(url.getFileName().toString());
+                // 文件夹名
+                String folderName = project.getId();
+                // storagePath 的值从数据库查询
+                String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR);
+                // 拼接文件夹的全路径
+                Path folderPath = Paths.get(storagePath, folderName);
+                String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + fileName;
+                byte[] b = ThumbnailUtil.decode(base64Str, fileName, folderPath.toString());
+                if(b == null) {
+                    throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
+                }
+                else hit.setNotes(newUrl);
             }
 
             String hitStatus = hit.getStatus();

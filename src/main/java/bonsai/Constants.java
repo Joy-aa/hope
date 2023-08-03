@@ -13,8 +13,7 @@ public class Constants {
 
     // zip文件暂存目录。但是 tmp 文件夹非root用户无法访问
     public static final String DEFAULT_FILE_UPLOAD_DIR = "/nfs/DamDetection/apps/hope/tmp";
-//    public static final String DEFAULT_FILE_UPLOAD_DIR = "/new_disk_1/xwx/apps/vipa-dataturks/tmp";// zip文件暂存目录
-//    public static final String DEFAULT_FILE_UPLOAD_DIR = "E:\\Github\\dataturks-vipa\\client\\tmp";
+//    public static final String DEFAULT_FILE_UPLOAD_DIR = "E:\\backup\\dataturks-vipa\\client\\tmp";
 
 
     public static final long MAX_FILE_UPLOAD_SIZE = 1024 * 1024 * 1024 * 20L; //20 GB.
@@ -24,16 +23,19 @@ public class Constants {
 
     public static final String DEFAULT_FILE_DOWNLOAD_DIR = DEFAULT_FILE_UPLOAD_DIR;// 下载数据时数据的暂存目录
     public static final String DEFAULT_FILE_STORAGE_DIR = "/nfs/DamDetection/apps/client/build/uploads";// 图片存储目录
-    public static final String DEFAULT_LABEL_STORAGE_DIR = "/nfs/DamDetection/apps/labels";// 参考标注存储目录
+//    public static final String DEFAULT_FILE_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\uploads";// 图片存储目录
+    public static final String DEFAULT_PRELABEL_STORAGE_DIR = "/nfs/DamDetection/apps/client/build/prelabels";// 参考标注存储目录
+//    public static final String DEFAULT_PRELABEL_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\prelabels";// 参考标注存储目录
+    public static final String DEFAULT_LABEL_STORAGE_DIR = "/nfs/DamDetection/apps/client/labels";// 真实标注存储目录
+//    public static final String DEFAULT_LABEL_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\labels";// 真实标注存储目录
 
-    //图像转换py代码文件位置（这个地址耦合性太高了）
+//    图像转换py代码文件位置（这个地址耦合性太高了）
     public static final String TRANS_PY_LOCATE = "/nfs/DamDetection/apps/hope/src/main/java/bonsai/Utils/ImageTransHandler/pyimage.py";
-    //    public static final String TRANS_PY_LOCATE = "/new_disk_1/xwx/dataturks-vipa/hope/src/main/java/bonsai/Utils/ImageTransHandler/pyimage.py";// 实验室
-//    public static final String TRANS_PY_LOCATE = "E:\\Github\\dataturks-vipa\\hope\\src\\main\\java\\bonsai\\Utils\\ImageTransHandler\\pyimage.py";// 阿里云
+//    public static final String TRANS_PY_LOCATE = "D:\\ideaProjects\\hope\\src\\main\\java\\bonsai\\Utils\\ImageTransHandler\\pyimage.py";
 
     // opencv 库文件位置
     public static final String OPENCV_LIB = "/nfs/DamDetection/apps/hope/src/main/resources/lib/opencv/libopencv_java451.so";
-//    public static final String OPENCV_LIB = "E:\\Github\\dataturks-vipa\\hope\\src\\main\\resources\\lib\\opencv\\opencv_java451.dll";
+//    public static final String OPENCV_LIB = "D:\\ideaProjects\\hope\\src\\main\\resources\\lib\\opencv\\opencv_java451.dll";
 
     /**
      * The constant INSTAMOJO_TEST_AUTH_ENDPOINT.

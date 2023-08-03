@@ -93,7 +93,7 @@ public class DataturksEndpoint {
             DReqObj reqObj = new DReqObj(id, req);
             createUserInternal(reqObj);
             DUsers user = AppConfig.getInstance().getdUsersDAO().findByOAuthIdInternal(id);
-            if (user.getStatus().equalsIgnoreCase(DConstants.USER_NOT_CONFIRM)) {
+            if (user.getStatus().equalsIgnoreCase(DConstants.USER_CONFIRMED)) {
                 // 发送验证邮件
                 // SendEmail.sendConfirmRegistrationEmail(user.getEmail(), user.getOAuthId());
                 // return new VerificationResponse(true, "验证邮件已发送，请到注册邮箱点击验证链接！");
@@ -651,8 +651,8 @@ public class DataturksEndpoint {
     /**
      * addLabel路由
      *
-     * @param projectId 项目的id
-     * @param status    hit状态
+     * @param hitId 图像id
+     * @param id   用户id
      * @return hits信息
      */
     @POST
@@ -683,7 +683,7 @@ public class DataturksEndpoint {
      * addLabels路由
      *
      * @param projectId 项目的id
-     * @param status    hit状态
+     * @param id    用户id
      * @return hits信息
      */
     @POST
