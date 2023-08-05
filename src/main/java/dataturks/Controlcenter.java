@@ -542,14 +542,15 @@ public class Controlcenter {
                 Path url = Paths.get(hit.getData());
 //                Path fileName = url.getFileName();
                 String fileName = ThumbnailUtil.getOriginalImgUrl(url.getFileName().toString());
+                String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".png";
                 // 文件夹名
                 String folderName = project.getId();
                 // storagePath 的值从数据库查询
                 String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR);
                 // 拼接文件夹的全路径
                 Path folderPath = Paths.get(storagePath, folderName);
-                String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + fileName;
-                byte[] b = ThumbnailUtil.decode(base64Str, fileName, folderPath.toString());
+                String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + newName;
+                byte[] b = ThumbnailUtil.decode(base64Str, newName, folderPath.toString());
                 if(b == null) {
                     throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
                 }

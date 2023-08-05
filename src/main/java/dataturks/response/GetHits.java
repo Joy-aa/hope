@@ -94,6 +94,7 @@ public class GetHits {
                 singleHit.setFileName(DUtils.getURLFilename(hit));
             }
             singleHit.setEvaluation(getHitEvaluationDisplay(hit));
+            singleHit.setNotes(hit.getNotes());
             singleHit.addHitResults(results);
             singleHit.setCorrectResult(hit.getCorrectResult());
             this.hits.add(singleHit);

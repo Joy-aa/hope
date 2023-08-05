@@ -26,7 +26,7 @@ public class Constants {
 //    public static final String DEFAULT_FILE_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\uploads";// 图片存储目录
     public static final String DEFAULT_PRELABEL_STORAGE_DIR = "/nfs/DamDetection/apps/client/build/prelabels";// 参考标注存储目录
 //    public static final String DEFAULT_PRELABEL_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\prelabels";// 参考标注存储目录
-    public static final String DEFAULT_LABEL_STORAGE_DIR = "/nfs/DamDetection/apps/client/labels";// 真实标注存储目录
+    public static final String DEFAULT_LABEL_STORAGE_DIR = "/nfs/DamDetection/apps/client/build/labels";// 真实标注存储目录
 //    public static final String DEFAULT_LABEL_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\labels";// 真实标注存储目录
 
 //    图像转换py代码文件位置（这个地址耦合性太高了）

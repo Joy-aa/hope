@@ -15,7 +15,7 @@ public class SingleHit {
 //    public String status;
     public String  fileName;
     public List<HitResult> hitResults;
-
+    public String notes;
     public String evaluation;
     public String correctResult;
 
@@ -81,13 +81,13 @@ public class SingleHit {
         isURL = URL;
     }
 
-//    public String getStatus() {
-//        return status;
-//    }
-//
-//    public void setStatus(String status) {
-//        this.status = status;
-//    }
+   public String getNotes() {
+       return notes;
+   }
+
+   public void setNotes(String notes) {
+       this.notes = notes;
+   }
 
     public String getFileName() {
         return fileName;
