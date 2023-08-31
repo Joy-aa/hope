@@ -45,23 +45,32 @@ public class AlphaUtil implements BaseSegment{
             {
                 throw new Exception("image is not 4-channels");
             }
-            byte[] data = new byte[(img.cols() * img.rows() * img.channels())];
-            img.get(0, 0, data);
+            byte[] data = new byte[(img.channels())];
+//            img.get(0, 0, data);
             for (int i = 0; i < img.rows(); i++)
             {
                 for (int j = 0; j < img.cols(); j++)
                 {
-                    if(data[i*img.cols() + j*4] == 255 && data[i*img.cols() + j*4 + 1] == 255 &&
-                            data[i*img.cols() + j*4 + 2] == 255 && data[i*img.cols() + j*4 + 3] == 0){
-                        data[i*img.cols() + j] = 0;
-                        data[i*img.cols() + j+1] = 0;
-                        data[i*img.cols() + j+2] = 0;
-                        data[i*img.cols() + j+3] = 1;
+                    img.get(i, j, data);
+                    int b = data[0];
+                    int g = data[1];
+                    int r = data[2];
+                    int alpha = data[3];
+                    if(b < 0) b = b+256;
+                    if(g < 0) g = g+256;
+                    if(r < 0) r = r+256;
+                    if(b == 255 && g == 255 && r == 255){
+//                        System.out.println("row:"+i+"col:"+j);
+//                        System.out.println(b+","+g+","+r+","+alpha);
+                        data[0] = 0;
+                        data[1] = 0;
+                        data[2] = 0;
+                        data[3] = 0;
                     }
-
+                    img.put(i, j, data);
                 }
             }
-            img.put(0, 0, data);
+//            img.put(0, 0, data);
             imwrite(dstUrl, img);
             LOG.info("saveUrl:",dstUrl);
             return "success";
