@@ -1,6 +1,6 @@
 dataturks-1.0-SNAPSHOT.jar
 /target/
-/lib/
+/libs/
 *.iml
 *.jks
 *.ipr

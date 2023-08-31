@@ -2,8 +2,7 @@ package dataturks;
 
 
 import bonsai.Constants;
-import bonsai.Utils.ThumbnailUtil;
-import bonsai.Utils.UploadFileUtil;
+import bonsai.Utils.*;
 import bonsai.config.AppConfig;
 import bonsai.config.DBBasedConfigs;
 import bonsai.dropwizard.dao.d.*;
@@ -521,129 +520,154 @@ public class Controlcenter {
 
     // validate the user has permission to write.
     // update the data for the hit.
-    public static boolean addHitResultInternal(DReqObj reqObj, String projectId, long hitId) {
-        if (projectId != null) {
-            // 验证 projectId 是否合法
-            DProjects project = AppConfig.getInstance().getdProjectsDAO().findByIdInternal(projectId);
-            if (project == null) {
-                throw new WebApplicationException("No such project found", Response.Status.NOT_FOUND);
-            }
+    public static boolean addHitResultInternal(DReqObj reqObj, String projectId, long hitId) throws Exception {
+        try{
+            if (projectId != null) {
+                // 验证 projectId 是否合法
+                DProjects project = AppConfig.getInstance().getdProjectsDAO().findByIdInternal(projectId);
+                if (project == null) {
+                    throw new WebApplicationException("No such project found", Response.Status.NOT_FOUND);
+                }
 
-            canUserWriteProjectElseThrowException(reqObj, project);
+                canUserWriteProjectElseThrowException(reqObj, project);
 
-            // 根据 hitid 从 hits 表中查询结果
-            DHits hit = AppConfig.getInstance().getdHitsDAO().findByIdInternal(hitId);
-            if (hit == null) {
-                throw new WebApplicationException("No such hit found", Response.Status.NOT_FOUND);
-            }
+                // 根据 hitid 从 hits 表中查询结果
+                DHits hit = AppConfig.getInstance().getdHitsDAO().findByIdInternal(hitId);
+                if (hit == null) {
+                    throw new WebApplicationException("No such hit found", Response.Status.NOT_FOUND);
+                }
 
-            if(reqObj.getReqMap().containsKey("base64Str")) {
-                String base64Str = reqObj.getReqMap().get("base64Str");
-                Path url = Paths.get(hit.getData());
+                if(reqObj.getReqMap().containsKey("base64Str")) {
+                    String base64Str = reqObj.getReqMap().get("base64Str");
+                    Path url = Paths.get(hit.getData());
+//                    System.out.println(url);
 //                Path fileName = url.getFileName();
-                String fileName = ThumbnailUtil.getOriginalImgUrl(url.getFileName().toString());
-                String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".png";
-                // 文件夹名
-                String folderName = project.getId();
-                // storagePath 的值从数据库查询
-                String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR);
-                // 拼接文件夹的全路径
-                Path folderPath = Paths.get(storagePath, folderName);
-                String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + newName;
-                byte[] b = ThumbnailUtil.decode(base64Str, newName, folderPath.toString());
-                if(b == null) {
-                    throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
-                }
-                else hit.setNotes(newUrl);
-            }
-
-            String hitStatus = hit.getStatus();
-            // 把项目的状态改为前端传来的状态
-            // 1、判断前端是否给了 status 这个字段，
-            // 2、有则设置，没有的话判断是否有 skipped 这个字段
-            // 3、有的话设置状态为 skipped，没有就设置成 done
-            if (reqObj.getReqMap().containsKey("status")) {
-                String status = reqObj.getReqMap().get("status");
-                if (DUtils.isValidHitStatus(status)) {
-                    hitStatus = status;
-                } else {
-                    throw new WebApplicationException("Unknown state for hit " + status, Response.Status.BAD_REQUEST);
-                }
-            } //old way when we did not pass status in the post call.
-            else {
-                boolean skipped = reqObj.getReqMap().containsKey("skipped");
-                if (skipped) {
-                    hitStatus = DConstants.HIT_STATUS_SKIPPED;
-                } else {
-                    hitStatus = DConstants.HIT_STATUS_DONE;
-                }
-            }
-
-            // 获取当前图片使用的模型
-            String model = "";
-            if (reqObj.getReqMap().containsKey("model")) {
-                model = reqObj.getReqMap().get("model");
-            }
-
-            if (hitStatus.equalsIgnoreCase("done")) {
-                hit.setCorrectResult(model);// 设置当前图片的 correctResult
-                //update the hit status.
-                hit.setStatus(hitStatus);
-            }
-            if(hitStatus.equalsIgnoreCase(DConstants.HIT_STATUS_REQUEUED)){
-                hit.setCorrectResult("");// 设置当前图片的 correctResult
-                //update the hit status.
-                hit.setStatus(DConstants.HIT_STATUS_NOT_DONE);
-                // 修改状态为 notDone
-                hitStatus = DConstants.HIT_STATUS_NOT_DONE;
-            }
-
-            if (DUtils.isHittedStatus(hitStatus))// 状态必须是有效的
-            {
-                // 更新或创建
-                DHitsResultDAO dao = AppConfig.getInstance().getdHitsResultDAO();
-                DHitsResult result = null;
-
-                //find any hit result which might be present for the HIT already.
-                // Once can tag and then edit and do skip and then retag..so can't rely on if the hit is skipped etc..we might have the
-                // hit result in the db any way.
-//                List<DHitsResult> results = dao.findByHitIdInternal(hit.getId());
-                // 根据 hitid 和 model 查询结果
-                List<DHitsResult> results = dao.findByHitIdAndModelInternal(hit.getId(), model);
-                if (results != null && !results.isEmpty()) result = results.get(0);
-
-                // 没有则创建
-                if (result == null)
-                    result = new DHitsResult(hitId, projectId, reqObj.getUid());
-
-                // 设置各种字段的值
-                result.setUserId(reqObj.getUid());
-                result.setPredLabel(reqObj.getReqMap().get("predLabel"));
-                result.setResult(reqObj.getReqMap().get("result"));
-                result.setNotes(reqObj.getReqMap().get("notes"));
-                // 2021.08.28 添加
-                result.setModel(model);
-                result.setStatus(hitStatus);
-                try {
-                    int time = 0;
-                    if (reqObj.getReqMap().containsKey("timeTakenToLabelInSec")) {
-                        time = (int) Double.parseDouble(reqObj.getReqMap().get("timeTakenToLabelInSec"));
+                    String fileName = ThumbnailUtil.getOriginalImgUrl(url.getFileName().toString());
+                    String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".png";
+//                    System.out.println("newName:"+newName);
+                    // 文件夹名
+                    String folderName = project.getId();
+                    // storagePath 的值从数据库查询
+                    String storagePath = DBBasedConfigs.getConfig("dResultStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR);
+                    // 拼接文件夹的全路径
+                    Path tmpPath = Paths.get(DBBasedConfigs.getConfig("dTmpStoragePath", String.class,Constants.DEFAULT_FILE_UPLOAD_DIR), folderName);
+//                    System.out.println("tmpPath:"+tmpPath);
+                    Path folderPath = Paths.get(storagePath, folderName);
+                    String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + newName;
+                    byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
+                    if(b == null) {
+                        throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
                     }
-                    time = time > 10000 ? 0 : time; //no point keeping wrong values.
-                    result.setTimeTakenToLabelInSec(time);
-                } catch (Exception e) {
-                    LOG.error(e.toString() + " time taken value = " + reqObj.getReqMap().get("timeTakenToLabelInSec"));
+                    else {
+                        File  dir=new File(folderPath.toString());
+                        if (!dir.exists() && !dir.isDirectory()) {
+                            dir.mkdirs();
+                        }
+                        String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
+                        String dstFile = Paths.get(folderPath.toString(),newName).toString();
+//                        System.out.println("tmpFile::"+tmpFile);
+                        new AlphaUtil().getMaskPath(tmpFile, dstFile);
+                        File file1 = new File(tmpFile);
+                        file1.delete();
+                        File file2 = new File(tmpPath.toString());
+                        file2.delete();
+                        hit.setNotes(newUrl);
+                    }
                 }
-                // 更新 d_hits_result 表
-                AppConfig.getInstance().getdHitsResultDAO().saveOrUpdateInternal(result);
+
+                String hitStatus = hit.getStatus();
+                // 把项目的状态改为前端传来的状态
+                // 1、判断前端是否给了 status 这个字段，
+                // 2、有则设置，没有的话判断是否有 skipped 这个字段
+                // 3、有的话设置状态为 skipped，没有就设置成 done
+                if (reqObj.getReqMap().containsKey("status")) {
+                    String status = reqObj.getReqMap().get("status");
+                    if (DUtils.isValidHitStatus(status)) {
+                        hitStatus = status;
+                    } else {
+                        throw new WebApplicationException("Unknown state for hit " + status, Response.Status.BAD_REQUEST);
+                    }
+                } //old way when we did not pass status in the post call.
+                else {
+                    boolean skipped = reqObj.getReqMap().containsKey("skipped");
+                    if (skipped) {
+                        hitStatus = DConstants.HIT_STATUS_SKIPPED;
+                    } else {
+                        hitStatus = DConstants.HIT_STATUS_DONE;
+                    }
+                }
+
+                // 获取当前图片使用的模型
+                String model = "";
+                if (reqObj.getReqMap().containsKey("model")) {
+                    model = reqObj.getReqMap().get("model");
+                }
+
+                if (hitStatus.equalsIgnoreCase("done")) {
+                    hit.setCorrectResult(model);// 设置当前图片的 correctResult
+                    //update the hit status.
+                    hit.setStatus(hitStatus);
+                }
+                if(hitStatus.equalsIgnoreCase(DConstants.HIT_STATUS_REQUEUED)){
+                    hit.setCorrectResult("");// 设置当前图片的 correctResult
+                    //update the hit status.
+                    hit.setStatus(DConstants.HIT_STATUS_NOT_DONE);
+                    // 修改状态为 notDone
+                    hitStatus = DConstants.HIT_STATUS_NOT_DONE;
+                }
+
+                if (DUtils.isHittedStatus(hitStatus))// 状态必须是有效的
+                {
+                    // 更新或创建
+                    DHitsResultDAO dao = AppConfig.getInstance().getdHitsResultDAO();
+                    DHitsResult result = null;
+
+                    //find any hit result which might be present for the HIT already.
+                    // Once can tag and then edit and do skip and then retag..so can't rely on if the hit is skipped etc..we might have the
+                    // hit result in the db any way.
+//                List<DHitsResult> results = dao.findByHitIdInternal(hit.getId());
+                    // 根据 hitid 和 model 查询结果
+                    List<DHitsResult> results = dao.findByHitIdAndModelInternal(hit.getId(), model);
+                    if (results != null && !results.isEmpty()) result = results.get(0);
+
+                    // 没有则创建
+                    if (result == null)
+                        result = new DHitsResult(hitId, projectId, reqObj.getUid());
+
+                    // 设置各种字段的值
+                    result.setUserId(reqObj.getUid());
+                    result.setPredLabel(reqObj.getReqMap().get("predLabel"));
+                    result.setResult(reqObj.getReqMap().get("result"));
+                    result.setNotes(reqObj.getReqMap().get("notes"));
+                    // 2021.08.28 添加
+                    result.setModel(model);
+                    result.setStatus(hitStatus);
+                    try {
+                        int time = 0;
+                        if (reqObj.getReqMap().containsKey("timeTakenToLabelInSec")) {
+                            time = (int) Double.parseDouble(reqObj.getReqMap().get("timeTakenToLabelInSec"));
+                        }
+                        time = time > 10000 ? 0 : time; //no point keeping wrong values.
+                        result.setTimeTakenToLabelInSec(time);
+                    } catch (Exception e) {
+                        LOG.error(e.toString() + " time taken value = " + reqObj.getReqMap().get("timeTakenToLabelInSec"));
+                    }
+                    // 更新 d_hits_result 表
+                    AppConfig.getInstance().getdHitsResultDAO().saveOrUpdateInternal(result);
 //                hitStatus = DConstants.HIT_STATUS_DONE;
+                }
+
+                // 更新 d_hits 表
+                AppConfig.getInstance().getdHitsDAO().saveOrUpdateInternal(hit);
             }
 
-            // 更新 d_hits 表
-            AppConfig.getInstance().getdHitsDAO().saveOrUpdateInternal(hit);
+            return true;
         }
-
-        return true;
+        catch (Exception e) {
+            // 记录日志，抛异常
+            LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
+            throw e;
+        }
     }
 
     public static boolean addEvaluationResultInternal(DReqObj reqObj, String projectId, long hitId) {

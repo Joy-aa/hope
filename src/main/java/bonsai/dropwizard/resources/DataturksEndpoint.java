@@ -728,7 +728,7 @@ public class DataturksEndpoint {
                                       @NotNull @HeaderParam("uid") String id,
                                       @NotNull @PathParam("projectId") String projectId,
                                       @NotNull @QueryParam("hitId") long hitId,
-                                      @NotNull Map<String, String> req) {
+                                      @NotNull Map<String, String> req) throws Exception {
 
         EventsLogger.logEvent("d_addHitResult");
 
@@ -1238,7 +1238,7 @@ public class DataturksEndpoint {
     }
 
 
-    public static DummyResponse addHitResultInternal(DReqObj reqObj, String projectId, long hitId) {
+    public static DummyResponse addHitResultInternal(DReqObj reqObj, String projectId, long hitId) throws Exception {
         Controlcenter.addHitResultInternal(reqObj, projectId, hitId);
         return DummyResponse.getOk();
     }
