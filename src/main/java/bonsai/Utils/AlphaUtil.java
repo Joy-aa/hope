@@ -59,9 +59,7 @@ public class AlphaUtil implements BaseSegment{
                     if(b < 0) b = b+256;
                     if(g < 0) g = g+256;
                     if(r < 0) r = r+256;
-                    if(b == 255 && g == 255 && r == 255){
-//                        System.out.println("row:"+i+"col:"+j);
-//                        System.out.println(b+","+g+","+r+","+alpha);
+                    if(b != 0 && g != 0){
                         data[0] = 0;
                         data[1] = 0;
                         data[2] = 0;
