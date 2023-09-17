@@ -207,4 +207,17 @@ public class ThumbnailUtil {
             outputStream.close();
         }
     }
+
+    public static boolean writeSliceImg(String imgPath, String savePath, int x, int y, int width, int height) throws IOException{
+        try{
+            File file = new File(imgPath);
+            BufferedImage image = ImageIO.read(file);
+            BufferedImage croppedImage = image.getSubimage(x,y,width,height);
+            String formatName = imgPath.split("\\.")[1];
+            return ImageIO.write(croppedImage, formatName, new File(savePath));
+        }catch (Exception e) {
+            LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
+            throw e;
+        }
+    }
 }

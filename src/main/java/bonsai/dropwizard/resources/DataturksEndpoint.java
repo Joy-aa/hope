@@ -1,6 +1,7 @@
 package bonsai.dropwizard.resources;
 
 
+import bonsai.Constants;
 import bonsai.Utils.*;
 import bonsai.config.AppConfig;
 import bonsai.config.DBBasedConfigs;
@@ -19,12 +20,14 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -455,6 +458,39 @@ public class DataturksEndpoint {
 
             return new GetReflectImgResponse(base64Str);// 返回值必须是一个对象
         } catch (Exception e) {
+            // 记录日志，抛异常
+            LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
+            throw e;
+        }
+    }
+
+    @POST
+    @Path("/getSliceImgs")
+    public GetSliceImgsResponse getSLiceImgs(@NotNull @HeaderParam("token") String token,
+                                             @NotNull @HeaderParam("uid") String id,
+                                             @NotNull Map<String, String> req) throws Exception {
+        // body 里面的数据在 req 参数里面
+        LoginAuth.validateAndGetDataturksUserIdElseThrowException(id, token);// 验证用户身份
+        try{
+            String imgUrl = req.get("imgUrl");// 根据缩略图找原图的URL
+            String imgPath = CommonUtils.getOriginalImagePath(imgUrl);
+            String labelUrl = req.get("labelUrl");
+            String labelPath = DBBasedConfigs.getConfig("dLabelStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR) + labelUrl;
+            String preLabelUrl = req.get("preLabelUrl");
+            String preLabelPath = DBBasedConfigs.getConfig("dPreLabelStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR) + preLabelUrl;
+            BufferedImage image = ImageIO.read(new File(imgPath));
+//            String
+            int height = image.getHeight();
+            int width = image.getWidth();
+            int sliceLength = (int) Double.parseDouble(req.get("length")) - 5;
+            int count = 0;
+            for(int i = 0; i < width; i+=sliceLength) {
+                for(int j = 0; j < height; j+=sliceLength) {
+                    String savePath;
+                }
+            }
+
+        }catch (Exception e) {
             // 记录日志，抛异常
             LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
             throw e;
