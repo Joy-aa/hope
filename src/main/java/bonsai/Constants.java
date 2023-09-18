@@ -28,14 +28,16 @@ public class Constants {
 //    public static final String DEFAULT_PRELABEL_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\prelabels";// 参考标注存储目录
     public static final String DEFAULT_LABEL_STORAGE_DIR = "/nfs/DamDetection/apps/client/build/labels";// 真实标注存储目录
 //    public static final String DEFAULT_LABEL_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\labels";// 真实标注存储目录
+    public static final String DEFAULT_SLICE_STORAGE_DIR = "/nfs/DamDetection/apps/client/build/slice";//切片保存地址
+//    public static final String DEFAULT_SLICE_STORAGE_DIR = "E:\\backup\\dataturks-vipa\\client\\build\\slice";
 
 //    图像转换py代码文件位置（这个地址耦合性太高了）
     public static final String TRANS_PY_LOCATE = "/nfs/DamDetection/apps/hope/src/main/java/bonsai/Utils/ImageTransHandler/pyimage.py";
-//    public static final String TRANS_PY_LOCATE = "D:\\ideaProjects\\hope\\src\\main\\java\\bonsai\\Utils\\ImageTransHandler\\pyimage.py";
+//    public static final String TRANS_PY_LOCATE = "E:\\ideaProjects\\hope\\src\\main\\java\\bonsai\\Utils\\ImageTransHandler\\pyimage.py";
 
     // opencv 库文件位置
     public static final String OPENCV_LIB = "/nfs/DamDetection/apps/hope/src/main/resources/lib/opencv/libopencv_java451.so";
-//    public static final String OPENCV_LIB = "D:\\ideaProjects\\hope\\src\\main\\resources\\lib\\opencv\\opencv_java451.dll";
+//    public static final String OPENCV_LIB = "D:\\ideaProjects\\hope\\src\\main\\resources\\lib\\opencv\\opencv_java451.so";
 
     /**
      * The constant INSTAMOJO_TEST_AUTH_ENDPOINT.

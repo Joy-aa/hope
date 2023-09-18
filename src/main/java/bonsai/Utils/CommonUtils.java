@@ -437,4 +437,28 @@ public class CommonUtils {
         String storagePath = getStoragePath();
         return storagePath + imgUrl;
     }
+
+    public static String getLabelStoragePath() {
+        String storagePath = DBBasedConfigs.getConfig("dLabelStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR);
+        Path folderPath = Paths.get(storagePath);
+        return folderPath.getParent().toString();// 返回不带 uploads 的路径
+    }
+
+    // 获取原始图片路径
+    public static String getOriginalLabelPath(String imgUrl) {
+        String storagePath = getLabelStoragePath();
+        return storagePath + imgUrl;
+    }
+
+    public static String getPreStoragePath() {
+        String storagePath = DBBasedConfigs.getConfig("dPreLabelStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
+        Path folderPath = Paths.get(storagePath);
+        return folderPath.getParent().toString();// 返回不带 uploads 的路径
+    }
+
+    // 获取原始图片路径
+    public static String getOriginalPreLabelPath(String imgUrl) {
+        String storagePath = getPreStoragePath();
+        return storagePath + imgUrl;
+    }
 }

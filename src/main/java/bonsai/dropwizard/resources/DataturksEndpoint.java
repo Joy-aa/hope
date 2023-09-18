@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -471,24 +472,97 @@ public class DataturksEndpoint {
                                              @NotNull Map<String, String> req) throws Exception {
         // body 里面的数据在 req 参数里面
         LoginAuth.validateAndGetDataturksUserIdElseThrowException(id, token);// 验证用户身份
+        GetSliceImgsResponse getSliceImgsResponse = new GetSliceImgsResponse();
         try{
-            String imgUrl = req.get("imgUrl");// 根据缩略图找原图的URL
-            String imgPath = CommonUtils.getOriginalImagePath(imgUrl);
-            String labelUrl = req.get("labelUrl");
-            String labelPath = DBBasedConfigs.getConfig("dLabelStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR) + labelUrl;
-            String preLabelUrl = req.get("preLabelUrl");
-            String preLabelPath = DBBasedConfigs.getConfig("dPreLabelStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR) + preLabelUrl;
+            long hitId = (long) Double.parseDouble(req.get("id"));;// 获取 hid
+            DHits dHits = AppConfig.getInstance().getdHitsDAO().findByIdInternal(hitId);// 查询 dHits
+            String projectId = dHits.getProjectId();
+            String imgUrl = dHits.getData();// 根据缩略图找原图的URL
+            String imgPath, labelPath, preLabelPath;
+            if(imgUrl.isEmpty())
+                return getSliceImgsResponse;
+            else
+                imgPath = CommonUtils.getOriginalImagePath(imgUrl);
+            String labelUrl = dHits.getNotes();
+            if(labelUrl.isEmpty())
+                labelPath = null;
+            else
+                labelPath = CommonUtils.getOriginalLabelPath(labelUrl);
+
+            String preLabelUrl = dHits.getExtras();
+            if(preLabelUrl.isEmpty())
+                preLabelPath = null;
+            else
+                preLabelPath = CommonUtils.getOriginalPreLabelPath(preLabelUrl);
+
+            LOG.info("imgPath:"+imgPath);
+            LOG.info("labelPath:"+labelPath);
+            LOG.info("preLabelPath:"+preLabelPath);
+
+
             BufferedImage image = ImageIO.read(new File(imgPath));
-//            String
+            String savePath = DBBasedConfigs.getConfig("dSliceStoragePath", String.class, Constants.DEFAULT_SLICE_STORAGE_DIR) + File.separator + projectId;
+            File directory = new File(savePath);
+            if (!directory.exists()) {
+                LOG.info("directory:"+directory);
+                directory.mkdirs();
+            }
             int height = image.getHeight();
             int width = image.getWidth();
+            LOG.info("width,height:"+width+","+height);
             int sliceLength = (int) Double.parseDouble(req.get("length")) - 5;
             int count = 0;
-            for(int i = 0; i < width; i+=sliceLength) {
-                for(int j = 0; j < height; j+=sliceLength) {
-                    String savePath;
+            for(int i = 0; i < height+sliceLength; i+=sliceLength) {
+                for(int j = 0; j < width+sliceLength; j+=sliceLength) {
+                    String tmpImgPath = savePath + File.separator + "img" + count + ".jpg";
+                    String tmpLabelPath = savePath + File.separator + "label" + count + ".png";
+                    String tmpPreLabelPath = savePath + File.separator + "prelabel" + count + ".png";
+
+                    File img = new File(tmpImgPath);
+                    String tmpImgUrl = directory.getParentFile().getName() + File.separator + directory.getName() + File.separator + img.getName();
+                    File label = new File(tmpLabelPath);
+                    String tmpLabelUrl = directory.getParentFile().getName() + File.separator + directory.getName() + File.separator + label.getName();
+                    File prelabel = new File(tmpPreLabelPath);
+                    String tmpPreLabelUrl = directory.getParentFile().getName() + File.separator + directory.getName() + File.separator + prelabel.getName();
+
+                    int i1 = i;
+                    int j1 = j;
+                    int i2 = i + sliceLength + 5;
+                    int j2 = j + sliceLength + 5;
+
+                    if(i2 >= height) {
+                        i1 = Math.max(0, height - sliceLength - 5);
+                        i2 = height;
+                    }
+                    if(j2 >= width) {
+                        j1 = Math.max(0, width - sliceLength - 5);
+                        j2 = width;
+                    }
+                    LOG.info("i1,j1:"+i1+","+j1);
+                    LOG.info("i2,j2:"+j1+","+j2);
+                    getSliceImgsResponse.getX1List().add(j1);
+                    getSliceImgsResponse.getX2List().add(j2);
+                    getSliceImgsResponse.getY1List().add(i1);
+                    getSliceImgsResponse.getY2List().add(i2);
+
+                    if(!dHits.isGoldenHIT()) {
+                        ThumbnailUtil.writeSliceImg(imgPath, tmpImgPath, j1, i1, j2-j1, i2-i1);
+                        getSliceImgsResponse.getImgUrls().add(tmpImgUrl);
+
+                        if(!labelPath.isEmpty()) {
+                            getSliceImgsResponse.getLabelUrls().add(tmpLabelUrl);
+                            ThumbnailUtil.writeSliceImg(labelPath, tmpLabelPath, j1, i1, j2-j1, i2-i1);
+                        }
+
+                        if(!preLabelPath.isEmpty()) {
+                            getSliceImgsResponse.getPrelabelUrls().add(tmpPreLabelUrl);
+                            ThumbnailUtil.writeSliceImg(preLabelPath, tmpPreLabelPath, j1, i1, j2-j1, i2-i1);
+                        }
+                    }
+                    count++;
                 }
             }
+            return getSliceImgsResponse;
 
         }catch (Exception e) {
             // 记录日志，抛异常
