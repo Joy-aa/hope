@@ -495,21 +495,21 @@ public class DataturksEndpoint {
             else
                 preLabelPath = CommonUtils.getOriginalPreLabelPath(preLabelUrl);
 
-            LOG.info("imgPath:"+imgPath);
-            LOG.info("labelPath:"+labelPath);
-            LOG.info("preLabelPath:"+preLabelPath);
+//            LOG.info("imgPath:"+imgPath);
+//            LOG.info("labelPath:"+labelPath);
+//            LOG.info("preLabelPath:"+preLabelPath);
 
 
             BufferedImage image = ImageIO.read(new File(imgPath));
             String savePath = DBBasedConfigs.getConfig("dSliceStoragePath", String.class, Constants.DEFAULT_SLICE_STORAGE_DIR) + File.separator + projectId;
             File directory = new File(savePath);
             if (!directory.exists()) {
-                LOG.info("directory:"+directory);
+//                LOG.info("directory:"+directory);
                 directory.mkdirs();
             }
             int height = image.getHeight();
             int width = image.getWidth();
-            LOG.info("width,height:"+width+","+height);
+//            LOG.info("width,height:"+width+","+height);
             int sliceLength = (int) Double.parseDouble(req.get("length")) - 5;
             int count = 0;
             for(int i = 0; i < height+sliceLength; i+=sliceLength) {
@@ -538,8 +538,8 @@ public class DataturksEndpoint {
                         j1 = Math.max(0, width - sliceLength - 5);
                         j2 = width;
                     }
-                    LOG.info("i1,j1:"+i1+","+j1);
-                    LOG.info("i2,j2:"+j1+","+j2);
+//                    LOG.info("i1,j1:"+i1+","+j1);
+//                    LOG.info("i2,j2:"+j1+","+j2);
                     getSliceImgsResponse.getX1List().add(j1);
                     getSliceImgsResponse.getX2List().add(j2);
                     getSliceImgsResponse.getY1List().add(i1);
