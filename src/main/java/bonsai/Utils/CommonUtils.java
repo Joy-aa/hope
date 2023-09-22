@@ -441,7 +441,7 @@ public class CommonUtils {
     public static String getLabelStoragePath() {
         String storagePath = DBBasedConfigs.getConfig("dLabelStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR);
         Path folderPath = Paths.get(storagePath);
-        return folderPath.getParent().toString();// 返回不带 uploads 的路径
+        return folderPath.getParent().toString();// 返回不带 labels 的路径
     }
 
     // 获取原始图片路径

@@ -10,10 +10,12 @@ import dataturks.DTypes;
 import dataturks.DUtils;
 import bonsai.Constants;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 
+import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opencv.core.*;
@@ -94,7 +96,26 @@ public class GetHits {
                 singleHit.setFileName(DUtils.getURLFilename(hit));
             }
             singleHit.setEvaluation(getHitEvaluationDisplay(hit));
-            singleHit.setNotes(hit.getNotes());
+            try{
+                String jsonPath = CommonUtils.getOriginalLabelPath(hit.getNotes());
+                File file = new File(jsonPath);
+                FileReader fileReader = new FileReader(file);
+                Reader reader = new InputStreamReader(new FileInputStream(file),"Utf-8");
+                int ch = 0;
+                StringBuffer sb = new StringBuffer();
+                while ((ch = reader.read()) != -1) {
+                    sb.append((char) ch);
+                }
+                fileReader.close();
+                reader.close();
+                String jsonStr = sb.toString();
+                JSONObject object = JSONObject.fromObject(jsonStr); //创建Json对象
+                singleHit.setNotes(object.toString());
+            }
+            catch (Exception e) {
+                LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
+            }
+//            singleHit.setNotes(hit.getNotes());
             singleHit.addHitResults(results);
             singleHit.setCorrectResult(hit.getCorrectResult());
             this.hits.add(singleHit);
