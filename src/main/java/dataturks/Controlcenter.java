@@ -345,10 +345,53 @@ public class Controlcenter {
             }
         }
         return null;
-
     }
 
-    //
+    public static GetHits getHit(String hitId, String status, String model) {
+
+        if(hitId != null) {
+            DHits hit = AppConfig.getInstance().getdHitsDAO().findByIdInternal(Long.parseLong(hitId));
+            GetHits getHits = new GetHits();
+            if(hit != null) {
+                    List<DHitsResult> hitResults = null;
+                    // 获取数据集中所有的图片
+                    if (model != null && model.equalsIgnoreCase(DConstants.DEFAULT_MODEL) && status == null) {
+                        hitResults = AppConfig.getInstance().getdHitsResultDAO()
+                                .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
+                        getHits.addSigleHit(hit, hitResults);
+                    }
+                    else if (model == null) {
+                        // model 参数传递的是 correctResult 的值
+                        hitResults = AppConfig.getInstance().getdHitsResultDAO()
+                                .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
+                        // 封装数据
+                        // 如果hitResults 的结果为空，返回结果不封装此记录
+                        if (hitResults.size() != 0) {
+                            getHits.addSigleHit(hit, hitResults);
+                        }
+                    }
+                    else {
+                        // 从 hit_result 中查询：参数是 hitid, mode, status
+                        hitResults = AppConfig.getInstance().getdHitsResultDAO()
+                                .findByHitIdAndModelAndStatusInternal(hit.getId(), model, status);
+                        // 如果 status 是 notDone，直接封装，因为这个状态，肯定没有 hitResults，但是前端需要这些数据
+                        if (status != null && status.equalsIgnoreCase(DConstants.HIT_STATUS_NOT_DONE)) {
+                            getHits.addSigleHit(hit, hitResults);
+                        } else {
+                            // 其他的status，如果hitResults 的结果为空，返回结果不封装此记录
+                            if (hitResults.size() != 0) {
+                                getHits.addSigleHit(hit, hitResults);
+                            }
+                        }
+                    }
+                    return getHits;
+            } else {
+                throw new WebApplicationException("No such project found", Response.Status.NOT_FOUND);
+            }
+        }
+        return null;
+
+    }
 
     public static GetHits addLabelById(DReqObj reqObj, String hitId) {
         if(hitId != null) {
@@ -360,7 +403,7 @@ public class Controlcenter {
                 int idx = hitName.indexOf("___");
                 String imgName = hitName.substring(idx+3);
                 String imgStem = imgName.substring(0, imgName.indexOf('.'));
-                String newImgName = imgStem + ".png";
+                String newImgName = imgStem + ".json";
                 // storagePath 的值从数据库查询
                 String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
                 // 拼接文件夹的全路径
@@ -377,10 +420,10 @@ public class Controlcenter {
 
     public static GetHits addLabelsById(DReqObj reqObj, String projectId, long count, long start) {
         if(projectId != null) {
-            LOG.info("wangjiawangjia1:"+projectId);
+//            LOG.info("wangjiawangjia1:"+projectId);
             DProjects project = AppConfig.getInstance().getdProjectsDAO().findByIdInternal(projectId);
             if (project != null) {
-                LOG.info("wangjiawangjia2"+project);
+//                LOG.info("wangjiawangjia2"+project);
                 if(reqObj != null) {
                     canUserReadProjectElseThrowException(reqObj, project);
                 }
@@ -393,14 +436,14 @@ public class Controlcenter {
 
                 if (dHits != null && !dHits.isEmpty()) {
                     for (DHits hit : dHits) {
-                        LOG.info("wangjiawangjia3"+hit);
+//                        LOG.info("wangjiawangjia3"+hit);
                         // 获取数据集中所有的图片
                         Path url = Paths.get(hit.getData());
                         String hitName = url.getFileName().toString();
                         int idx = hitName.indexOf("___");
                         String imgName = hitName.substring(idx+3);
                         String imgStem = imgName.substring(0, imgName.indexOf('.'));
-                        String newImgName = imgStem + ".png";
+                        String newImgName = imgStem + ".json";
                         // storagePath 的值从数据库查询
                         String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
                         // 拼接文件夹的全路径

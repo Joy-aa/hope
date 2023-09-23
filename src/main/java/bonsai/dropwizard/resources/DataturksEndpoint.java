@@ -756,6 +756,30 @@ public class DataturksEndpoint {
         }
     }
 
+    @POST
+    @Path("/getHit")
+    public GetHits getHit(@NotNull @HeaderParam("token") String token,
+                           @NotNull @HeaderParam("uid") String id,
+                           @NotNull @QueryParam("hitId") String hitId,
+                           @QueryParam("status") String status,
+                           @QueryParam("model") String model) {
+
+        EventsLogger.logEvent("d_getHits");
+
+        LoginAuth.validateAndGetDataturksUserIdElseThrowException(id, token);
+
+        String regStr = "getHits: hit= " + hitId + " status = " + status + " uid = " + id + " model = " + model;
+        LOG.info(regStr);
+
+        try {
+            return Controlcenter.getHit(hitId, status, model);
+        } catch (Exception e) {
+            LOG.error("Error " + regStr + e.toString());
+            EventsLogger.logErrorEvent("d_getHitsError");
+            throw e;
+        }
+    }
+
     /**
      * addLabel路由
      *
@@ -807,11 +831,11 @@ public class DataturksEndpoint {
         LoginAuth.validateAndGetDataturksUserIdElseThrowException(id, token);
         
         String regStr = "addLabels: project= " + projectId;
-        LOG.info(regStr);
+//        LOG.info(regStr);
 
         try {
             DReqObj reqObj = new DReqObj(id, null);// 根据请求的信息构建请求对象
-            LOG.info("wangjiawangjia"+reqObj);
+//            LOG.info("wangjiawangjia"+reqObj);
             return Controlcenter.addLabelsById(reqObj, projectId, count, start);
             
         } catch (Exception e) {
