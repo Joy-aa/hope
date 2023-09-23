@@ -439,25 +439,23 @@ public class DataturksEndpoint {
      */
     @POST
     @Path("/getLabelImg")
-    public GetReflectImgResponse getLabelImg(@NotNull @HeaderParam("token") String token,
+    public GetHits getLabelImg(@NotNull @HeaderParam("token") String token,
                                                @NotNull @HeaderParam("uid") String id,
                                                @NotNull Map<String, String> req) throws IOException {
 
         // body 里面的数据在 req 参数里面
         LoginAuth.validateAndGetDataturksUserIdElseThrowException(id, token);// 验证用户身份
-
+        GetHits getHits = new GetHits();
         try {
             // 解析前端传过来的参数
-            String imgUrl = req.get("imgUrl");// 根据缩略图找原图的URL
-            int x = (int) Double.parseDouble(req.get("xPosition"));
-            int y = (int) Double.parseDouble(req.get("yPosition"));
-            int width = (int) Double.parseDouble(req.get("width"));
-            int height = (int) Double.parseDouble(req.get("height"));
+            long hitId = (long) Double.parseDouble(req.get("id"));;// 获取 hid
+            DHits hit = AppConfig.getInstance().getdHitsDAO().findByIdInternal(hitId);// 查询 dHits
+            List<DHitsResult> hitResults = null;
+            hitResults = AppConfig.getInstance().getdHitsResultDAO()
+                    .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
+            getHits.addSigleHit(hit, hitResults);
 
-
-            String base64Str = ThumbnailUtil.getImgBase64Str(imgUrl, x, y, width, height);
-
-            return new GetReflectImgResponse(base64Str);// 返回值必须是一个对象
+            return getHits;
         } catch (Exception e) {
             // 记录日志，抛异常
             LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
@@ -758,6 +756,30 @@ public class DataturksEndpoint {
         }
     }
 
+    @POST
+    @Path("/getHit")
+    public GetHits getHit(@NotNull @HeaderParam("token") String token,
+                           @NotNull @HeaderParam("uid") String id,
+                           @NotNull @QueryParam("hitId") String hitId,
+                           @QueryParam("status") String status,
+                           @QueryParam("model") String model) {
+
+        EventsLogger.logEvent("d_getHits");
+
+        LoginAuth.validateAndGetDataturksUserIdElseThrowException(id, token);
+
+        String regStr = "getHits: hit= " + hitId + " status = " + status + " uid = " + id + " model = " + model;
+        LOG.info(regStr);
+
+        try {
+            return Controlcenter.getHit(hitId, status, model);
+        } catch (Exception e) {
+            LOG.error("Error " + regStr + e.toString());
+            EventsLogger.logErrorEvent("d_getHitsError");
+            throw e;
+        }
+    }
+
     /**
      * addLabel路由
      *
@@ -809,11 +831,11 @@ public class DataturksEndpoint {
         LoginAuth.validateAndGetDataturksUserIdElseThrowException(id, token);
         
         String regStr = "addLabels: project= " + projectId;
-        LOG.info(regStr);
+//        LOG.info(regStr);
 
         try {
             DReqObj reqObj = new DReqObj(id, null);// 根据请求的信息构建请求对象
-            LOG.info("wangjiawangjia"+reqObj);
+//            LOG.info("wangjiawangjia"+reqObj);
             return Controlcenter.addLabelsById(reqObj, projectId, count, start);
             
         } catch (Exception e) {

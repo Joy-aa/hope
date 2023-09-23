@@ -72,7 +72,7 @@ public class GetHits {
 
     public void addSigleHit(DHits hit, List<DHitsResult> results) {
         if (hit != null) {
-            SingleHit singleHit = new SingleHit(hit.getId(), hit.getData(), hit.getExtras());
+            SingleHit singleHit = new SingleHit(hit.getId(), hit.getData());
             singleHit.setURL(hit.isURL());
             // 解决awt报错问题
             System.setProperty("java.awt.headless", "true");
@@ -97,8 +97,8 @@ public class GetHits {
             }
             singleHit.setEvaluation(getHitEvaluationDisplay(hit));
             try{
-                String jsonPath = CommonUtils.getOriginalLabelPath(hit.getNotes());
-                File file = new File(jsonPath);
+                String jsonLabelPath = CommonUtils.getOriginalLabelPath(hit.getNotes());
+                File file = new File(jsonLabelPath);
                 FileReader fileReader = new FileReader(file);
                 Reader reader = new InputStreamReader(new FileInputStream(file),"Utf-8");
                 int ch = 0;
@@ -111,6 +111,22 @@ public class GetHits {
                 String jsonStr = sb.toString();
                 JSONObject object = JSONObject.fromObject(jsonStr); //创建Json对象
                 singleHit.setNotes(object.toString());
+
+                String jsonPreLabelPath = CommonUtils.getOriginalPreLabelPath(hit.getExtras());
+                LOG.info("prelabel:"+hit.getExtras());
+                File file1 = new File(jsonPreLabelPath);
+                FileReader fileReader1 = new FileReader(file1);
+                Reader reader1 = new InputStreamReader(new FileInputStream(file1),"utf-8");
+                ch = 0;
+                StringBuffer stringBuffer = new StringBuffer();
+                while((ch = reader1.read()) != -1) {
+                    stringBuffer.append((char) ch);
+                }
+                fileReader1.close();
+                reader1.close();
+                String jsonStr1 = stringBuffer.toString();
+                JSONObject object1 = JSONObject.fromObject(jsonStr1);
+                singleHit.setExtras(object1.toString());
             }
             catch (Exception e) {
                 LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));

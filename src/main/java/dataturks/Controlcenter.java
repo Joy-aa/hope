@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import java.io.File;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -345,10 +345,53 @@ public class Controlcenter {
             }
         }
         return null;
-
     }
 
-    //
+    public static GetHits getHit(String hitId, String status, String model) {
+
+        if(hitId != null) {
+            DHits hit = AppConfig.getInstance().getdHitsDAO().findByIdInternal(Long.parseLong(hitId));
+            GetHits getHits = new GetHits();
+            if(hit != null) {
+                    List<DHitsResult> hitResults = null;
+                    // 获取数据集中所有的图片
+                    if (model != null && model.equalsIgnoreCase(DConstants.DEFAULT_MODEL) && status == null) {
+                        hitResults = AppConfig.getInstance().getdHitsResultDAO()
+                                .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
+                        getHits.addSigleHit(hit, hitResults);
+                    }
+                    else if (model == null) {
+                        // model 参数传递的是 correctResult 的值
+                        hitResults = AppConfig.getInstance().getdHitsResultDAO()
+                                .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
+                        // 封装数据
+                        // 如果hitResults 的结果为空，返回结果不封装此记录
+                        if (hitResults.size() != 0) {
+                            getHits.addSigleHit(hit, hitResults);
+                        }
+                    }
+                    else {
+                        // 从 hit_result 中查询：参数是 hitid, mode, status
+                        hitResults = AppConfig.getInstance().getdHitsResultDAO()
+                                .findByHitIdAndModelAndStatusInternal(hit.getId(), model, status);
+                        // 如果 status 是 notDone，直接封装，因为这个状态，肯定没有 hitResults，但是前端需要这些数据
+                        if (status != null && status.equalsIgnoreCase(DConstants.HIT_STATUS_NOT_DONE)) {
+                            getHits.addSigleHit(hit, hitResults);
+                        } else {
+                            // 其他的status，如果hitResults 的结果为空，返回结果不封装此记录
+                            if (hitResults.size() != 0) {
+                                getHits.addSigleHit(hit, hitResults);
+                            }
+                        }
+                    }
+                    return getHits;
+            } else {
+                throw new WebApplicationException("No such project found", Response.Status.NOT_FOUND);
+            }
+        }
+        return null;
+
+    }
 
     public static GetHits addLabelById(DReqObj reqObj, String hitId) {
         if(hitId != null) {
@@ -360,7 +403,7 @@ public class Controlcenter {
                 int idx = hitName.indexOf("___");
                 String imgName = hitName.substring(idx+3);
                 String imgStem = imgName.substring(0, imgName.indexOf('.'));
-                String newImgName = imgStem + ".png";
+                String newImgName = imgStem + ".json";
                 // storagePath 的值从数据库查询
                 String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
                 // 拼接文件夹的全路径
@@ -377,10 +420,10 @@ public class Controlcenter {
 
     public static GetHits addLabelsById(DReqObj reqObj, String projectId, long count, long start) {
         if(projectId != null) {
-            LOG.info("wangjiawangjia1:"+projectId);
+//            LOG.info("wangjiawangjia1:"+projectId);
             DProjects project = AppConfig.getInstance().getdProjectsDAO().findByIdInternal(projectId);
             if (project != null) {
-                LOG.info("wangjiawangjia2"+project);
+//                LOG.info("wangjiawangjia2"+project);
                 if(reqObj != null) {
                     canUserReadProjectElseThrowException(reqObj, project);
                 }
@@ -393,14 +436,14 @@ public class Controlcenter {
 
                 if (dHits != null && !dHits.isEmpty()) {
                     for (DHits hit : dHits) {
-                        LOG.info("wangjiawangjia3"+hit);
+//                        LOG.info("wangjiawangjia3"+hit);
                         // 获取数据集中所有的图片
                         Path url = Paths.get(hit.getData());
                         String hitName = url.getFileName().toString();
                         int idx = hitName.indexOf("___");
                         String imgName = hitName.substring(idx+3);
                         String imgStem = imgName.substring(0, imgName.indexOf('.'));
-                        String newImgName = imgStem + ".png";
+                        String newImgName = imgStem + ".json";
                         // storagePath 的值从数据库查询
                         String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
                         // 拼接文件夹的全路径
@@ -543,7 +586,7 @@ public class Controlcenter {
 //                    System.out.println(url);
 //                Path fileName = url.getFileName();
                     String fileName = ThumbnailUtil.getOriginalImgUrl(url.getFileName().toString());
-                    String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".png";
+                    String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".json";
 //                    System.out.println("newName:"+newName);
                     // 文件夹名
                     String folderName = project.getId();
@@ -554,23 +597,32 @@ public class Controlcenter {
 //                    System.out.println("tmpPath:"+tmpPath);
                     Path folderPath = Paths.get(storagePath, folderName);
                     String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + newName;
-                    byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
-                    if(b == null) {
-                        throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
+//                    byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
+                    if(base64Str == null) {
+//                        throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
+                        throw new WebApplicationException("Img-json is null'", Response.Status.NOT_FOUND);
                     }
                     else {
                         File  dir=new File(folderPath.toString());
                         if (!dir.exists() && !dir.isDirectory()) {
                             dir.mkdirs();
                         }
-                        String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
                         String dstFile = Paths.get(folderPath.toString(),newName).toString();
+                        File file=new File(dstFile);
+                        FileOutputStream fileOutputStream=new FileOutputStream(file);//实例化FileOutputStream
+                        OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream,"utf-8");//将字符流转换为字节流
+                        BufferedWriter bufferedWriter= new BufferedWriter(outputStreamWriter);//创建字符缓冲输出流对象
+                        bufferedWriter.write(base64Str);//将格式化的jsonarray字符串写入文件
+                        bufferedWriter.flush();//清空缓冲区，强制输出数据
+                        bufferedWriter.close();//关闭输出流
+//                        String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
+//                        String dstFile = Paths.get(folderPath.toString(),newName).toString();
 //                        System.out.println("tmpFile::"+tmpFile);
-                        new AlphaUtil().getMaskPath(tmpFile, dstFile);
-                        File file1 = new File(tmpFile);
-                        file1.delete();
-                        File file2 = new File(tmpPath.toString());
-                        file2.delete();
+//                        new AlphaUtil().getMaskPath(tmpFile, dstFile);
+//                        File file1 = new File(tmpFile);
+//                        file1.delete();
+//                        File file2 = new File(tmpPath.toString());
+//                        file2.delete();
                         hit.setNotes(newUrl);
                     }
                 }
