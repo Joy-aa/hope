@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import java.io.File;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -543,7 +543,7 @@ public class Controlcenter {
 //                    System.out.println(url);
 //                Path fileName = url.getFileName();
                     String fileName = ThumbnailUtil.getOriginalImgUrl(url.getFileName().toString());
-                    String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".png";
+                    String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".json";
 //                    System.out.println("newName:"+newName);
                     // 文件夹名
                     String folderName = project.getId();
@@ -554,23 +554,32 @@ public class Controlcenter {
 //                    System.out.println("tmpPath:"+tmpPath);
                     Path folderPath = Paths.get(storagePath, folderName);
                     String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + newName;
-                    byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
-                    if(b == null) {
-                        throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
+//                    byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
+                    if(base64Str == null) {
+//                        throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
+                        throw new WebApplicationException("Img-json is null'", Response.Status.NOT_FOUND);
                     }
                     else {
                         File  dir=new File(folderPath.toString());
                         if (!dir.exists() && !dir.isDirectory()) {
                             dir.mkdirs();
                         }
-                        String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
                         String dstFile = Paths.get(folderPath.toString(),newName).toString();
+                        File file=new File(dstFile);
+                        FileOutputStream fileOutputStream=new FileOutputStream(file);//实例化FileOutputStream
+                        OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream,"utf-8");//将字符流转换为字节流
+                        BufferedWriter bufferedWriter= new BufferedWriter(outputStreamWriter);//创建字符缓冲输出流对象
+                        bufferedWriter.write(base64Str);//将格式化的jsonarray字符串写入文件
+                        bufferedWriter.flush();//清空缓冲区，强制输出数据
+                        bufferedWriter.close();//关闭输出流
+//                        String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
+//                        String dstFile = Paths.get(folderPath.toString(),newName).toString();
 //                        System.out.println("tmpFile::"+tmpFile);
-                        new AlphaUtil().getMaskPath(tmpFile, dstFile);
-                        File file1 = new File(tmpFile);
-                        file1.delete();
-                        File file2 = new File(tmpPath.toString());
-                        file2.delete();
+//                        new AlphaUtil().getMaskPath(tmpFile, dstFile);
+//                        File file1 = new File(tmpFile);
+//                        file1.delete();
+//                        File file2 = new File(tmpPath.toString());
+//                        file2.delete();
                         hit.setNotes(newUrl);
                     }
                 }
