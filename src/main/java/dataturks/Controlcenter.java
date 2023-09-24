@@ -580,8 +580,8 @@ public class Controlcenter {
                     throw new WebApplicationException("No such hit found", Response.Status.NOT_FOUND);
                 }
 
-                if(reqObj.getReqMap().containsKey("base64Str")) {
-                    String base64Str = reqObj.getReqMap().get("base64Str");
+                if(reqObj.getReqMap().containsKey("label")) {
+                    String base64Str = reqObj.getReqMap().get("label");
                     Path url = Paths.get(hit.getData());
 //                    System.out.println(url);
 //                Path fileName = url.getFileName();
@@ -599,7 +599,6 @@ public class Controlcenter {
                     String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + newName;
 //                    byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
                     if(base64Str == null) {
-//                        throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
                         throw new WebApplicationException("Img-json is null'", Response.Status.NOT_FOUND);
                     }
                     else {
@@ -615,15 +614,39 @@ public class Controlcenter {
                         bufferedWriter.write(base64Str);//将格式化的jsonarray字符串写入文件
                         bufferedWriter.flush();//清空缓冲区，强制输出数据
                         bufferedWriter.close();//关闭输出流
-//                        String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
-//                        String dstFile = Paths.get(folderPath.toString(),newName).toString();
-//                        System.out.println("tmpFile::"+tmpFile);
-//                        new AlphaUtil().getMaskPath(tmpFile, dstFile);
-//                        File file1 = new File(tmpFile);
-//                        file1.delete();
-//                        File file2 = new File(tmpPath.toString());
-//                        file2.delete();
                         hit.setNotes(newUrl);
+                    }
+                }
+
+                if(reqObj.getReqMap().containsKey("base64Str")) {
+                    String base64Str = reqObj.getReqMap().get("base64Str");
+                    if(base64Str != null && !base64Str.isEmpty()) {
+                        Path url = Paths.get(hit.getData());
+                        String fileName = ThumbnailUtil.getOriginalImgUrl(url.getFileName().toString());
+                        String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".png";
+                        // 文件夹名
+                        String folderName = project.getId();
+                        // storagePath 的值从数据库查询
+                        String storagePath = DBBasedConfigs.getConfig("dResultStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR);
+                        // 拼接文件夹的全路径
+                        Path tmpPath = Paths.get(DBBasedConfigs.getConfig("dTmpStoragePath", String.class, Constants.DEFAULT_FILE_UPLOAD_DIR), folderName);
+                        Path folderPath = Paths.get(storagePath, folderName);
+                        byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
+                        if (b == null) {
+                            throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
+                        } else {
+                            File dir = new File(folderPath.toString());
+                            if (!dir.exists() && !dir.isDirectory()) {
+                                dir.mkdirs();
+                            }
+                            String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
+                            String dstFile = Paths.get(folderPath.toString(), newName).toString();
+                            new AlphaUtil().getMaskPath(tmpFile, dstFile);
+                            File file1 = new File(tmpFile);
+                            file1.delete();
+                            File file2 = new File(tmpPath.toString());
+                            file2.delete();
+                        }
                     }
                 }
 
@@ -690,7 +713,6 @@ public class Controlcenter {
                     result.setUserId(reqObj.getUid());
                     result.setPredLabel(reqObj.getReqMap().get("predLabel"));
                     result.setResult(reqObj.getReqMap().get("result"));
-                    result.setNotes(reqObj.getReqMap().get("notes"));
                     // 2021.08.28 添加
                     result.setModel(model);
                     result.setStatus(hitStatus);
