@@ -97,39 +97,51 @@ public class GetHits {
             }
             singleHit.setEvaluation(getHitEvaluationDisplay(hit));
             try{
-                String jsonLabelPath = CommonUtils.getOriginalLabelPath(hit.getNotes());
-                File file = new File(jsonLabelPath);
-                FileReader fileReader = new FileReader(file);
-                Reader reader = new InputStreamReader(new FileInputStream(file),"Utf-8");
-                int ch = 0;
-                StringBuffer sb = new StringBuffer();
-                while ((ch = reader.read()) != -1) {
-                    sb.append((char) ch);
+                String labelUrl = hit.getNotes();
+                if(labelUrl == null || labelUrl.isEmpty())
+                    singleHit.setNotes(labelUrl);
+                else {
+                    String jsonLabelPath = CommonUtils.getOriginalLabelPath(hit.getNotes());
+                    File file = new File(jsonLabelPath);
+                    FileReader fileReader = new FileReader(file);
+                    Reader reader = new InputStreamReader(new FileInputStream(file),"Utf-8");
+                    int ch = 0;
+                    StringBuffer sb = new StringBuffer();
+                    while ((ch = reader.read()) != -1) {
+                        sb.append((char) ch);
+                    }
+                    fileReader.close();
+                    reader.close();
+                    String jsonStr = sb.toString();
+                    JSONObject object = JSONObject.fromObject(jsonStr); //创建Json对象
+                    singleHit.setNotes(object.toString());
                 }
-                fileReader.close();
-                reader.close();
-                String jsonStr = sb.toString();
-                JSONObject object = JSONObject.fromObject(jsonStr); //创建Json对象
-                singleHit.setNotes(object.toString());
 
-                String jsonPreLabelPath = CommonUtils.getOriginalPreLabelPath(hit.getExtras());
-                LOG.info("prelabel:"+hit.getExtras());
-                File file1 = new File(jsonPreLabelPath);
-                FileReader fileReader1 = new FileReader(file1);
-                Reader reader1 = new InputStreamReader(new FileInputStream(file1),"utf-8");
-                ch = 0;
-                StringBuffer stringBuffer = new StringBuffer();
-                while((ch = reader1.read()) != -1) {
-                    stringBuffer.append((char) ch);
+                String preLabelUrl = hit.getExtras();
+                if(preLabelUrl == null || preLabelUrl.isEmpty()) {
+                    singleHit.setExtras(preLabelUrl);
                 }
-                fileReader1.close();
-                reader1.close();
-                String jsonStr1 = stringBuffer.toString();
-                JSONObject object1 = JSONObject.fromObject(jsonStr1);
-                singleHit.setExtras(object1.toString());
+                else {
+                    String jsonPreLabelPath = CommonUtils.getOriginalPreLabelPath(hit.getExtras());
+                    LOG.info("prelabel:"+hit.getExtras());
+                    File file1 = new File(jsonPreLabelPath);
+                    FileReader fileReader1 = new FileReader(file1);
+                    Reader reader1 = new InputStreamReader(new FileInputStream(file1),"utf-8");
+                    int ch = 0;
+                    StringBuffer stringBuffer = new StringBuffer();
+                    while((ch = reader1.read()) != -1) {
+                        stringBuffer.append((char) ch);
+                    }
+                    fileReader1.close();
+                    reader1.close();
+                    String jsonStr1 = stringBuffer.toString();
+                    JSONObject object1 = JSONObject.fromObject(jsonStr1);
+                    singleHit.setExtras(object1.toString());
+                }
+
             }
             catch (Exception e) {
-                LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
+//                LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
             }
 //            singleHit.setNotes(hit.getNotes());
             singleHit.addHitResults(results);
