@@ -599,7 +599,6 @@ public class Controlcenter {
                     String newUrl = "/" + folderPath.getParent().getFileName() + "/" + folderPath.getFileName() + "/" + newName;
 //                    byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
                     if(base64Str == null) {
-//                        throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
                         throw new WebApplicationException("Img-json is null'", Response.Status.NOT_FOUND);
                     }
                     else {
@@ -615,21 +614,13 @@ public class Controlcenter {
                         bufferedWriter.write(base64Str);//将格式化的jsonarray字符串写入文件
                         bufferedWriter.flush();//清空缓冲区，强制输出数据
                         bufferedWriter.close();//关闭输出流
-//                        String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
-//                        String dstFile = Paths.get(folderPath.toString(),newName).toString();
-//                        System.out.println("tmpFile::"+tmpFile);
-//                        new AlphaUtil().getMaskPath(tmpFile, dstFile);
-//                        File file1 = new File(tmpFile);
-//                        file1.delete();
-//                        File file2 = new File(tmpPath.toString());
-//                        file2.delete();
                         hit.setNotes(newUrl);
                     }
                 }
 
                 if(reqObj.getReqMap().containsKey("base64Str")) {
                     String base64Str = reqObj.getReqMap().get("base64Str");
-                    if(base64Str != null || !base64Str.isEmpty()) {
+                    if(base64Str != null && !base64Str.isEmpty()) {
                         Path url = Paths.get(hit.getData());
                         String fileName = ThumbnailUtil.getOriginalImgUrl(url.getFileName().toString());
                         String newName = fileName.substring(0, fileName.lastIndexOf(".")) + ".png";
@@ -638,29 +629,24 @@ public class Controlcenter {
                         // storagePath 的值从数据库查询
                         String storagePath = DBBasedConfigs.getConfig("dResultStoragePath", String.class, Constants.DEFAULT_LABEL_STORAGE_DIR);
                         // 拼接文件夹的全路径
-                        Path tmpPath = Paths.get(DBBasedConfigs.getConfig("dTmpStoragePath", String.class,Constants.DEFAULT_FILE_UPLOAD_DIR), folderName);
+                        Path tmpPath = Paths.get(DBBasedConfigs.getConfig("dTmpStoragePath", String.class, Constants.DEFAULT_FILE_UPLOAD_DIR), folderName);
                         Path folderPath = Paths.get(storagePath, folderName);
                         byte[] b = ThumbnailUtil.decode(base64Str, newName, tmpPath.toString());
-                        File dir=new File(folderPath.toString());
-                        if (!dir.exists() && !dir.isDirectory()) {
-                            dir.mkdirs();
+                        if (b == null) {
+                            throw new WebApplicationException("Img-base64 decode fails'", Response.Status.NOT_FOUND);
+                        } else {
+                            File dir = new File(folderPath.toString());
+                            if (!dir.exists() && !dir.isDirectory()) {
+                                dir.mkdirs();
+                            }
+                            String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
+                            String dstFile = Paths.get(folderPath.toString(), newName).toString();
+                            new AlphaUtil().getMaskPath(tmpFile, dstFile);
+                            File file1 = new File(tmpFile);
+                            file1.delete();
+                            File file2 = new File(tmpPath.toString());
+                            file2.delete();
                         }
-                        String dstFile = Paths.get(folderPath.toString(),newName).toString();
-                        File file=new File(dstFile);
-                        FileOutputStream fileOutputStream=new FileOutputStream(file);//实例化FileOutputStream
-                        OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream,"utf-8");//将字符流转换为字节流
-                        BufferedWriter bufferedWriter= new BufferedWriter(outputStreamWriter);//创建字符缓冲输出流对象
-                        bufferedWriter.write(base64Str);//将格式化的jsonarray字符串写入文件
-                        bufferedWriter.flush();//清空缓冲区，强制输出数据
-                        bufferedWriter.close();//关闭输出流
-//                        String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
-//                        String dstFile = Paths.get(folderPath.toString(),newName).toString();
-//                        System.out.println("tmpFile::"+tmpFile);
-//                        new AlphaUtil().getMaskPath(tmpFile, dstFile);
-//                        File file1 = new File(tmpFile);
-//                        file1.delete();
-//                        File file2 = new File(tmpPath.toString());
-//                        file2.delete();
                     }
                 }
 
@@ -705,46 +691,46 @@ public class Controlcenter {
                     hitStatus = DConstants.HIT_STATUS_NOT_DONE;
                 }
 
-                if (DUtils.isHittedStatus(hitStatus))// 状态必须是有效的
-                {
-                    // 更新或创建
-                    DHitsResultDAO dao = AppConfig.getInstance().getdHitsResultDAO();
-                    DHitsResult result = null;
-
-                    //find any hit result which might be present for the HIT already.
-                    // Once can tag and then edit and do skip and then retag..so can't rely on if the hit is skipped etc..we might have the
-                    // hit result in the db any way.
-//                List<DHitsResult> results = dao.findByHitIdInternal(hit.getId());
-                    // 根据 hitid 和 model 查询结果
-                    List<DHitsResult> results = dao.findByHitIdAndModelInternal(hit.getId(), model);
-                    if (results != null && !results.isEmpty()) result = results.get(0);
-
-                    // 没有则创建
-                    if (result == null)
-                        result = new DHitsResult(hitId, projectId, reqObj.getUid());
-
-                    // 设置各种字段的值
-                    result.setUserId(reqObj.getUid());
-                    result.setPredLabel(reqObj.getReqMap().get("predLabel"));
-                    result.setResult(reqObj.getReqMap().get("result"));
-                    result.setNotes(reqObj.getReqMap().get("notes"));
-                    // 2021.08.28 添加
-                    result.setModel(model);
-                    result.setStatus(hitStatus);
-                    try {
-                        int time = 0;
-                        if (reqObj.getReqMap().containsKey("timeTakenToLabelInSec")) {
-                            time = (int) Double.parseDouble(reqObj.getReqMap().get("timeTakenToLabelInSec"));
-                        }
-                        time = time > 10000 ? 0 : time; //no point keeping wrong values.
-                        result.setTimeTakenToLabelInSec(time);
-                    } catch (Exception e) {
-                        LOG.error(e.toString() + " time taken value = " + reqObj.getReqMap().get("timeTakenToLabelInSec"));
-                    }
-                    // 更新 d_hits_result 表
-                    AppConfig.getInstance().getdHitsResultDAO().saveOrUpdateInternal(result);
-//                hitStatus = DConstants.HIT_STATUS_DONE;
-                }
+//                if (DUtils.isHittedStatus(hitStatus))// 状态必须是有效的
+//                {
+//                    // 更新或创建
+//                    DHitsResultDAO dao = AppConfig.getInstance().getdHitsResultDAO();
+//                    DHitsResult result = null;
+//
+//                    //find any hit result which might be present for the HIT already.
+//                    // Once can tag and then edit and do skip and then retag..so can't rely on if the hit is skipped etc..we might have the
+//                    // hit result in the db any way.
+////                List<DHitsResult> results = dao.findByHitIdInternal(hit.getId());
+//                    // 根据 hitid 和 model 查询结果
+//                    List<DHitsResult> results = dao.findByHitIdAndModelInternal(hit.getId(), model);
+//                    if (results != null && !results.isEmpty()) result = results.get(0);
+//
+//                    // 没有则创建
+//                    if (result == null)
+//                        result = new DHitsResult(hitId, projectId, reqObj.getUid());
+//
+//                    // 设置各种字段的值
+//                    result.setUserId(reqObj.getUid());
+//                    result.setPredLabel(reqObj.getReqMap().get("predLabel"));
+//                    result.setResult(reqObj.getReqMap().get("result"));
+//                    result.setNotes(reqObj.getReqMap().get("notes"));
+//                    // 2021.08.28 添加
+//                    result.setModel(model);
+//                    result.setStatus(hitStatus);
+//                    try {
+//                        int time = 0;
+//                        if (reqObj.getReqMap().containsKey("timeTakenToLabelInSec")) {
+//                            time = (int) Double.parseDouble(reqObj.getReqMap().get("timeTakenToLabelInSec"));
+//                        }
+//                        time = time > 10000 ? 0 : time; //no point keeping wrong values.
+//                        result.setTimeTakenToLabelInSec(time);
+//                    } catch (Exception e) {
+//                        LOG.error(e.toString() + " time taken value = " + reqObj.getReqMap().get("timeTakenToLabelInSec"));
+//                    }
+//                    // 更新 d_hits_result 表
+////                    AppConfig.getInstance().getdHitsResultDAO().saveOrUpdateInternal(result);
+////                hitStatus = DConstants.HIT_STATUS_DONE;
+//                }
 
                 // 更新 d_hits 表
                 AppConfig.getInstance().getdHitsDAO().saveOrUpdateInternal(hit);
