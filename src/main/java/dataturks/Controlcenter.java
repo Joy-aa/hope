@@ -691,46 +691,45 @@ public class Controlcenter {
                     hitStatus = DConstants.HIT_STATUS_NOT_DONE;
                 }
 
-//                if (DUtils.isHittedStatus(hitStatus))// 状态必须是有效的
-//                {
-//                    // 更新或创建
-//                    DHitsResultDAO dao = AppConfig.getInstance().getdHitsResultDAO();
-//                    DHitsResult result = null;
-//
-//                    //find any hit result which might be present for the HIT already.
-//                    // Once can tag and then edit and do skip and then retag..so can't rely on if the hit is skipped etc..we might have the
-//                    // hit result in the db any way.
-////                List<DHitsResult> results = dao.findByHitIdInternal(hit.getId());
-//                    // 根据 hitid 和 model 查询结果
-//                    List<DHitsResult> results = dao.findByHitIdAndModelInternal(hit.getId(), model);
-//                    if (results != null && !results.isEmpty()) result = results.get(0);
-//
-//                    // 没有则创建
-//                    if (result == null)
-//                        result = new DHitsResult(hitId, projectId, reqObj.getUid());
-//
-//                    // 设置各种字段的值
-//                    result.setUserId(reqObj.getUid());
-//                    result.setPredLabel(reqObj.getReqMap().get("predLabel"));
-//                    result.setResult(reqObj.getReqMap().get("result"));
-//                    result.setNotes(reqObj.getReqMap().get("notes"));
-//                    // 2021.08.28 添加
-//                    result.setModel(model);
-//                    result.setStatus(hitStatus);
-//                    try {
-//                        int time = 0;
-//                        if (reqObj.getReqMap().containsKey("timeTakenToLabelInSec")) {
-//                            time = (int) Double.parseDouble(reqObj.getReqMap().get("timeTakenToLabelInSec"));
-//                        }
-//                        time = time > 10000 ? 0 : time; //no point keeping wrong values.
-//                        result.setTimeTakenToLabelInSec(time);
-//                    } catch (Exception e) {
-//                        LOG.error(e.toString() + " time taken value = " + reqObj.getReqMap().get("timeTakenToLabelInSec"));
-//                    }
-//                    // 更新 d_hits_result 表
-////                    AppConfig.getInstance().getdHitsResultDAO().saveOrUpdateInternal(result);
-////                hitStatus = DConstants.HIT_STATUS_DONE;
-//                }
+                if (DUtils.isHittedStatus(hitStatus))// 状态必须是有效的
+                {
+                    // 更新或创建
+                    DHitsResultDAO dao = AppConfig.getInstance().getdHitsResultDAO();
+                    DHitsResult result = null;
+
+                    //find any hit result which might be present for the HIT already.
+                    // Once can tag and then edit and do skip and then retag..so can't rely on if the hit is skipped etc..we might have the
+                    // hit result in the db any way.
+//                List<DHitsResult> results = dao.findByHitIdInternal(hit.getId());
+                    // 根据 hitid 和 model 查询结果
+                    List<DHitsResult> results = dao.findByHitIdAndModelInternal(hit.getId(), model);
+                    if (results != null && !results.isEmpty()) result = results.get(0);
+
+                    // 没有则创建
+                    if (result == null)
+                        result = new DHitsResult(hitId, projectId, reqObj.getUid());
+
+                    // 设置各种字段的值
+                    result.setUserId(reqObj.getUid());
+                    result.setPredLabel(reqObj.getReqMap().get("predLabel"));
+                    result.setResult(reqObj.getReqMap().get("result"));
+                    // 2021.08.28 添加
+                    result.setModel(model);
+                    result.setStatus(hitStatus);
+                    try {
+                        int time = 0;
+                        if (reqObj.getReqMap().containsKey("timeTakenToLabelInSec")) {
+                            time = (int) Double.parseDouble(reqObj.getReqMap().get("timeTakenToLabelInSec"));
+                        }
+                        time = time > 10000 ? 0 : time; //no point keeping wrong values.
+                        result.setTimeTakenToLabelInSec(time);
+                    } catch (Exception e) {
+                        LOG.error(e.toString() + " time taken value = " + reqObj.getReqMap().get("timeTakenToLabelInSec"));
+                    }
+                    // 更新 d_hits_result 表
+                    AppConfig.getInstance().getdHitsResultDAO().saveOrUpdateInternal(result);
+//                hitStatus = DConstants.HIT_STATUS_DONE;
+                }
 
                 // 更新 d_hits 表
                 AppConfig.getInstance().getdHitsDAO().saveOrUpdateInternal(hit);
