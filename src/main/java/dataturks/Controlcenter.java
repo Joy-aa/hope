@@ -713,6 +713,7 @@ public class Controlcenter {
                     result.setUserId(reqObj.getUid());
                     result.setPredLabel(reqObj.getReqMap().get("predLabel"));
                     result.setResult(reqObj.getReqMap().get("result"));
+                    result.setNotes(reqObj.getReqMap().get("notes"));
                     // 2021.08.28 添加
                     result.setModel(model);
                     result.setStatus(hitStatus);

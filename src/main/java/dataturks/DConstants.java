@@ -32,7 +32,7 @@ public class DConstants {
     public final static String UPLOAD_DATA_STATUS_PARAM_NAME = "dataItemStatus";
 
     // 大图生成小图的阈值，2M
-    public static final long MAX_IMAGE_FILE_SIZE = 2 * 1024 * 1024L;
+    public static final long MAX_IMAGE_FILE_SIZE = 100 * 1024L;
     // 默认模型
     public static final String DEFAULT_MODEL = "human-annotation";
 
