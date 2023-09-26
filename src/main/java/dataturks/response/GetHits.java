@@ -19,8 +19,10 @@ import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.opencv.core.*;
-import static org.opencv.imgcodecs.Imgcodecs.imread;
 
+import javax.validation.constraints.Null;
+
+import static org.opencv.imgcodecs.Imgcodecs.imread;
 public class GetHits {
     private static final Logger LOG = LoggerFactory.getLogger(GetHits.class);
 
@@ -141,12 +143,24 @@ public class GetHits {
 
             }
             catch (Exception e) {
-//                LOG.error("Error " + e.toString() + " " + CommonUtils.getStackTraceString(e));
+                LOG.error("Error Gethits" + " " + CommonUtils.getStackTraceString(e));
             }
 //            singleHit.setNotes(hit.getNotes());
             singleHit.addHitResults(results);
             singleHit.setCorrectResult(hit.getCorrectResult());
             this.hits.add(singleHit);
+        }
+    }
+
+    public void delNotes() {
+        for(SingleHit hit: this.hits) {
+            hit.setNotes(null);
+        }
+    }
+
+    public void delExtras() {
+        for(SingleHit hit: this.hits) {
+            hit.setExtras(null);
         }
     }
 

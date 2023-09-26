@@ -338,7 +338,8 @@ public class Controlcenter {
                         }
                     }
                 }
-
+                getHits.delNotes();
+                getHits.delExtras();
                 return getHits;
             } else {
                 throw new WebApplicationException("No such project found", Response.Status.NOT_FOUND);
