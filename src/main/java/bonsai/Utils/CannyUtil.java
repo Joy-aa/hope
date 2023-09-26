@@ -62,7 +62,7 @@ public class CannyUtil implements BaseSegment{
             findContours(mask, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
             List<String> res = CommonUtils.fromContoursGetPath(contours, x, y);
-            LOG.info("路径总条数: " + res.size());
+//            LOG.info("路径总条数: " + res.size());
             return res.toString();
         } catch (Exception e) {
             // 记录日志，抛异常

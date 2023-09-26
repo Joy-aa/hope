@@ -353,14 +353,14 @@ public class DataturksEndpoint {
         //allows us to debug user issues.
         String impersonateId = DUtils.getImpersonatedIdIfAny(id);
         if (impersonateId != null) {
-            LOG.info("Impersonating to " + impersonateId + " for the user with id= " + id);
+//            LOG.info("Impersonating to " + impersonateId + " for the user with id= " + id);
             id = impersonateId;
         }
 
         boolean cacheEnabled = cache == null;
 
         String regStr = "getUserHome: " + id;
-        LOG.info(regStr);
+//        LOG.info(regStr);
 
         UserHome response = null;
         DReqObj reqObj = null;
@@ -453,7 +453,7 @@ public class DataturksEndpoint {
             List<DHitsResult> hitResults = null;
             hitResults = AppConfig.getInstance().getdHitsResultDAO()
                     .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
-            getHits.addSigleHit(hit, hitResults);
+            getHits.addSigleHit(hit, hitResults, 1);
 
             return getHits;
         } catch (Exception e) {
@@ -678,7 +678,11 @@ public class DataturksEndpoint {
                     "\n\n" + " Number of records ignored = " + response.getNumHitsIgnored() +
                     "\n\n" + " File size (KB) = " + response.getTotalUploadSizeInBytes() / 1024);
 
-
+            try {
+                stream.close();
+            } catch (Exception e) { //can be safely ignored?
+                LOG.error("Error close stream :Error = " + e.toString());
+            }
             return response;
         } catch (Exception e) {
             LOG.error("Error " + regStr + e.toString() + " " + CommonUtils.getStackTraceString(e));
@@ -744,7 +748,7 @@ public class DataturksEndpoint {
         String regStr = "getHits: project= " + projectId + " status = " + status
                 + " label = " + label + " evaluation=" + evaluation
                 + " userId= " + userId + " uid = " + id + " model = " + model;
-        LOG.info(regStr);
+//        LOG.info(regStr);
 
         try {
             DReqObj reqObj = new DReqObj(id, null);// 根据请求的信息构建请求对象

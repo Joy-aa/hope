@@ -310,7 +310,7 @@ public class Controlcenter {
                         if (model != null && model.equalsIgnoreCase(DConstants.DEFAULT_MODEL) && status == null) {
                             hitResults = AppConfig.getInstance().getdHitsResultDAO()
                                     .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
-                            getHits.addSigleHit(hit, hitResults);
+                            getHits.addSigleHit(hit, hitResults, 0);
                             continue;
                         }
                         if (model == null) {
@@ -320,7 +320,7 @@ public class Controlcenter {
                             // 封装数据
                             // 如果hitResults 的结果为空，返回结果不封装此记录
                             if (hitResults.size() != 0) {
-                                getHits.addSigleHit(hit, hitResults);
+                                getHits.addSigleHit(hit, hitResults, 0);
                             }
                             continue;
                         }
@@ -329,17 +329,20 @@ public class Controlcenter {
                                 .findByHitIdAndModelAndStatusInternal(hit.getId(), model, status);
                         // 如果 status 是 notDone，直接封装，因为这个状态，肯定没有 hitResults，但是前端需要这些数据
                         if (status != null && status.equalsIgnoreCase(DConstants.HIT_STATUS_NOT_DONE)) {
-                            getHits.addSigleHit(hit, hitResults);
+                            getHits.addSigleHit(hit, hitResults, 0);
                         } else {
                             // 其他的status，如果hitResults 的结果为空，返回结果不封装此记录
                             if (hitResults.size() != 0) {
-                                getHits.addSigleHit(hit, hitResults);
+                                getHits.addSigleHit(hit, hitResults, 0);
                             }
                         }
+                        hitResults = null;
                     }
                 }
-                getHits.delNotes();
-                getHits.delExtras();
+                dHits = null;
+//                getHits.delNotes();
+//                getHits.delExtras();
+//                System.gc();
                 return getHits;
             } else {
                 throw new WebApplicationException("No such project found", Response.Status.NOT_FOUND);
@@ -359,7 +362,7 @@ public class Controlcenter {
                     if (model != null && model.equalsIgnoreCase(DConstants.DEFAULT_MODEL) && status == null) {
                         hitResults = AppConfig.getInstance().getdHitsResultDAO()
                                 .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
-                        getHits.addSigleHit(hit, hitResults);
+                        getHits.addSigleHit(hit, hitResults, 1);
                     }
                     else if (model == null) {
                         // model 参数传递的是 correctResult 的值
@@ -368,7 +371,7 @@ public class Controlcenter {
                         // 封装数据
                         // 如果hitResults 的结果为空，返回结果不封装此记录
                         if (hitResults.size() != 0) {
-                            getHits.addSigleHit(hit, hitResults);
+                            getHits.addSigleHit(hit, hitResults, 1);
                         }
                     }
                     else {
@@ -377,14 +380,17 @@ public class Controlcenter {
                                 .findByHitIdAndModelAndStatusInternal(hit.getId(), model, status);
                         // 如果 status 是 notDone，直接封装，因为这个状态，肯定没有 hitResults，但是前端需要这些数据
                         if (status != null && status.equalsIgnoreCase(DConstants.HIT_STATUS_NOT_DONE)) {
-                            getHits.addSigleHit(hit, hitResults);
+                            getHits.addSigleHit(hit, hitResults, 1);
                         } else {
                             // 其他的status，如果hitResults 的结果为空，返回结果不封装此记录
                             if (hitResults.size() != 0) {
-                                getHits.addSigleHit(hit, hitResults);
+                                getHits.addSigleHit(hit, hitResults, 1);
                             }
                         }
                     }
+                    hitResults = null;
+                    hit = null;
+//                    System.gc();
                     return getHits;
             } else {
                 throw new WebApplicationException("No such project found", Response.Status.NOT_FOUND);
@@ -412,7 +418,7 @@ public class Controlcenter {
                 String newUrl = "/" + folderPath.getFileName() + "/" + newImgName;
                 AppConfig.getInstance().getdHitsDAO().updateHitById(hit.getId(), newUrl);
                 hit.setExtras(newUrl);
-                getHits.addSigleHit(hit, null);
+                getHits.addSigleHit(hit, null, 0);
                 return getHits;
             }
         }
@@ -452,7 +458,7 @@ public class Controlcenter {
                         String newUrl = "/" + folderPath.getFileName() + "/" + newImgName;
                         AppConfig.getInstance().getdHitsDAO().updateHitById(hit.getId(), newUrl);
                         hit.setExtras(newUrl);
-                        getHits.addSigleHit(hit, null);
+                        getHits.addSigleHit(hit, null, 0);
                     }
                 }
 
@@ -502,7 +508,7 @@ public class Controlcenter {
             if (hit != null) {
                 List<DHitsResult> results = new ArrayList<>();
                 results.add(result);
-                getHits.addSigleHit(hit, results);
+                getHits.addSigleHit(hit, results, 0);
             }
         }
 
@@ -615,6 +621,7 @@ public class Controlcenter {
                         bufferedWriter.write(base64Str);//将格式化的jsonarray字符串写入文件
                         bufferedWriter.flush();//清空缓冲区，强制输出数据
                         bufferedWriter.close();//关闭输出流
+                        fileOutputStream.close();
                         hit.setNotes(newUrl);
                     }
                 }

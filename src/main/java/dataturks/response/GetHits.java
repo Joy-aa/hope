@@ -72,7 +72,7 @@ public class GetHits {
         }
     }
 
-    public void addSigleHit(DHits hit, List<DHitsResult> results) {
+    public void addSigleHit(DHits hit, List<DHitsResult> results, int type) {
         if (hit != null) {
             SingleHit singleHit = new SingleHit(hit.getId(), hit.getData());
             singleHit.setURL(hit.isURL());
@@ -98,57 +98,67 @@ public class GetHits {
                 singleHit.setFileName(DUtils.getURLFilename(hit));
             }
             singleHit.setEvaluation(getHitEvaluationDisplay(hit));
-            try{
-                String labelUrl = hit.getNotes();
-                if(labelUrl == null || labelUrl.isEmpty())
-                    singleHit.setNotes(labelUrl);
-                else {
-                    String jsonLabelPath = CommonUtils.getOriginalLabelPath(hit.getNotes());
-                    File file = new File(jsonLabelPath);
-                    FileReader fileReader = new FileReader(file);
-                    Reader reader = new InputStreamReader(new FileInputStream(file),"Utf-8");
-                    int ch = 0;
-                    StringBuffer sb = new StringBuffer();
-                    while ((ch = reader.read()) != -1) {
-                        sb.append((char) ch);
-                    }
-                    fileReader.close();
-                    reader.close();
-                    String jsonStr = sb.toString();
-                    JSONObject object = JSONObject.fromObject(jsonStr); //创建Json对象
-                    singleHit.setNotes(object.toString());
-                }
-
-                String preLabelUrl = hit.getExtras();
-                if(preLabelUrl == null || preLabelUrl.isEmpty()) {
-                    singleHit.setExtras(preLabelUrl);
-                }
-                else {
-                    String jsonPreLabelPath = CommonUtils.getOriginalPreLabelPath(hit.getExtras());
-                    LOG.info("prelabel:"+hit.getExtras());
-                    File file1 = new File(jsonPreLabelPath);
-                    FileReader fileReader1 = new FileReader(file1);
-                    Reader reader1 = new InputStreamReader(new FileInputStream(file1),"utf-8");
-                    int ch = 0;
-                    StringBuffer stringBuffer = new StringBuffer();
-                    while((ch = reader1.read()) != -1) {
-                        stringBuffer.append((char) ch);
-                    }
-                    fileReader1.close();
-                    reader1.close();
-                    String jsonStr1 = stringBuffer.toString();
-                    JSONObject object1 = JSONObject.fromObject(jsonStr1);
-                    singleHit.setExtras(object1.toString());
-                }
-
+            if(type == 0) {
+                singleHit.setNotes(hit.getNotes());
+                singleHit.setExtras(hit.getExtras());;
             }
-            catch (Exception e) {
-                LOG.error("Error Gethits" + " " + CommonUtils.getStackTraceString(e));
+            else {
+                try{
+                    String labelUrl = hit.getNotes();
+                    if(labelUrl == null || labelUrl.isEmpty())
+                        singleHit.setNotes(labelUrl);
+                    else {
+                        String jsonLabelPath = CommonUtils.getOriginalLabelPath(hit.getNotes());
+                        File file = new File(jsonLabelPath);
+                        FileReader fileReader = new FileReader(file);
+                        Reader reader = new InputStreamReader(new FileInputStream(file),"Utf-8");
+                        int ch = 0;
+                        StringBuffer sb = new StringBuffer();
+                        while ((ch = reader.read()) != -1) {
+                            sb.append((char) ch);
+                        }
+                        fileReader.close();
+                        reader.close();
+                        String jsonStr = sb.toString();
+                        JSONObject object = JSONObject.fromObject(jsonStr); //创建Json对象
+                        singleHit.setNotes(object.toString());
+                        object = null;
+                    }
+
+                    String preLabelUrl = hit.getExtras();
+                    if(preLabelUrl == null || preLabelUrl.isEmpty()) {
+                        singleHit.setExtras(preLabelUrl);
+                    }
+                    else {
+                        String jsonPreLabelPath = CommonUtils.getOriginalPreLabelPath(hit.getExtras());
+//                    LOG.info("prelabel:"+hit.getExtras());
+                        File file1 = new File(jsonPreLabelPath);
+                        FileReader fileReader1 = new FileReader(file1);
+                        Reader reader1 = new InputStreamReader(new FileInputStream(file1),"utf-8");
+                        int ch = 0;
+                        StringBuffer stringBuffer = new StringBuffer();
+                        while((ch = reader1.read()) != -1) {
+                            stringBuffer.append((char) ch);
+                        }
+                        fileReader1.close();
+                        reader1.close();
+                        String jsonStr1 = stringBuffer.toString();
+                        JSONObject object1 = JSONObject.fromObject(jsonStr1);
+                        singleHit.setExtras(object1.toString());
+                        object1 = null;
+                    }
+
+                }
+                catch (Exception e) {
+                    LOG.error("Error Gethits" + " " + CommonUtils.getStackTraceString(e));
+                }
             }
+
 //            singleHit.setNotes(hit.getNotes());
             singleHit.addHitResults(results);
             singleHit.setCorrectResult(hit.getCorrectResult());
             this.hits.add(singleHit);
+            singleHit = null;
         }
     }
 

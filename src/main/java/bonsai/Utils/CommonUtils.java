@@ -68,6 +68,7 @@ public class CommonUtils {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
+        pw.close();
         return sw.toString(); // stack trace as a string
     }
 

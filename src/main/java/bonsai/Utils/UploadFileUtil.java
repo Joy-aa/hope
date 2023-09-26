@@ -67,6 +67,11 @@ public class UploadFileUtil {
 
         String path = getRandomUploadPath(fileDetail.getFileName());
         boolean success = copy(stream, Paths.get(path), maxFileSize);
+        try {
+            stream.close();
+        } catch (Exception e) { //can be safely ignored?
+            LOG.error("Error close stream :Error = " + e.toString());
+        }
         if (success) {
             return path;
         }
@@ -101,6 +106,7 @@ public class UploadFileUtil {
 
             try {
                 out.close();
+                input.close();
             } catch (Exception e) { //can be safely ignored?
                 LOG.error("Exception while copying file " + target + " Error = " + e.toString());
             }

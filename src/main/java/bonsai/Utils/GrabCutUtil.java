@@ -64,7 +64,7 @@ public class GrabCutUtil implements BaseSegment {
             // grabCut(img, mask, rectangle, bgdModel, fgdModel, 3, Imgproc.GC_INIT_WITH_RECT);
             grabCut(img, mask, rectangle, bgdModel, fgdModel, iterCount, Imgproc.GC_INIT_WITH_RECT);
             long end = System.currentTimeMillis();
-            LOG.info("分割图像花费时间是: " + (end - start) / 1000 + "s");
+//            LOG.info("分割图像花费时间是: " + (end - start) / 1000 + "s");
             // 通过比较把可能为前景的像素保存到 mask 中
             Core.compare(mask, source, mask, Core.CMP_EQ);
             // 设置前景色为黑色
@@ -83,7 +83,7 @@ public class GrabCutUtil implements BaseSegment {
             for (MatOfPoint contour : contours) {
                 res.add(contour.toList().toString().replace("{", "[").replace("}", "]"));
             }
-            LOG.info("路径总条数: " + res.size());
+//            LOG.info("路径总条数: " + res.size());
             return res.toString();
         } catch (Exception e) {
             // 记录日志，抛异常

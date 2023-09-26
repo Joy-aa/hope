@@ -69,7 +69,7 @@ public class AlphaUtil implements BaseSegment{
             }
 //            img.put(0, 0, data);
             imwrite(dstUrl, dst);
-            LOG.info("saveUrl:",dstUrl);
+//            LOG.info("saveUrl:",dstUrl);
             return "success";
         }
         catch (Exception e) {
