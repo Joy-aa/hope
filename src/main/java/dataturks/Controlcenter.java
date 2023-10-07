@@ -412,7 +412,7 @@ public class Controlcenter {
                 String imgStem = imgName.substring(0, imgName.indexOf('.'));
                 String newImgName = imgStem + ".json";
                 // storagePath 的值从数据库查询
-                String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
+                String storagePath = DBBasedConfigs.getConfig("dPreLabelStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
                 // 拼接文件夹的全路径
                 Path folderPath = Paths.get(storagePath);
                 String newUrl = "/" + folderPath.getFileName() + "/" + newImgName;
@@ -452,7 +452,7 @@ public class Controlcenter {
                         String imgStem = imgName.substring(0, imgName.indexOf('.'));
                         String newImgName = imgStem + ".json";
                         // storagePath 的值从数据库查询
-                        String storagePath = DBBasedConfigs.getConfig("dUploadStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
+                        String storagePath = DBBasedConfigs.getConfig("dPreLabelStoragePath", String.class, Constants.DEFAULT_PRELABEL_STORAGE_DIR);
                         // 拼接文件夹的全路径
                         Path folderPath = Paths.get(storagePath);
                         String newUrl = "/" + folderPath.getFileName() + "/" + newImgName;
