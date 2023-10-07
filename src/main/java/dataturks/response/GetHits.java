@@ -106,10 +106,11 @@ public class GetHits {
                 try{
                     String labelUrl = hit.getNotes();
                     if(labelUrl == null || labelUrl.isEmpty()) {
-                        singleHit.setNotes(labelUrl);
+//                        singleHit.setNotes(labelUrl);
                         String preLabelUrl = hit.getExtras();
                         if(preLabelUrl == null || preLabelUrl.isEmpty()) {
-                            singleHit.setExtras(preLabelUrl);
+//                            singleHit.setExtras(preLabelUrl);
+                            singleHit.setNotes(preLabelUrl);
                         }
                         else {
                             String jsonPreLabelPath = CommonUtils.getOriginalPreLabelPath(hit.getExtras());
@@ -125,7 +126,8 @@ public class GetHits {
                             reader1.close();
                             String jsonStr1 = stringBuffer.toString();
                             JSONObject object1 = JSONObject.fromObject(jsonStr1);
-                            singleHit.setExtras(object1.toString());
+//                            singleHit.setExtras(object1.toString());
+                            singleHit.setNotes(object1.toString());
                             object1 = null;
                         }
                     }
