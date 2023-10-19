@@ -55,7 +55,7 @@ public class ThresholdUtil implements BaseSegment {
             Mat tmp = new Mat(srcImg, rectangle);
 
             Mat mask = new Mat();
-            threshold(tmp, mask, thresh, maxVal, THRESH_OTSU);// 基于阈值对图像的局部进行分割
+            threshold(tmp, mask, thresh, maxVal, THRESH_BINARY_INV);// 基于阈值对图像的局部进行分割
             List<MatOfPoint> contours = new ArrayList<>();
             Mat hierarchy = new Mat();
             // 找轮廓

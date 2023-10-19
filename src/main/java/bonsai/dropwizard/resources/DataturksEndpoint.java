@@ -610,6 +610,14 @@ public class DataturksEndpoint {
                     int maxVal = (int) Double.parseDouble(req.get("maxVal"));
                     imageSegmentationMaskPath = new ThresholdUtil().getMaskPath(imgUrl, x, y, width, height, thresh, maxVal);
                     break;
+                case DConstants.ADAPTIVE:// 阈值处理
+                    int blocksize = (int) Double.parseDouble(req.get("blocksize"));
+                    double CVal = (int) Double.parseDouble(req.get("CVal"));
+                    imageSegmentationMaskPath = new AdaptiveUtil().getMaskPath(imgUrl, x, y, width, height, blocksize, CVal);
+                    break;
+                case DConstants.OTSU:// 阈值处理
+                    imageSegmentationMaskPath = new OTSUUtil().getMaskPath(imgUrl, x, y, width, height);
+                    break;
                 case DConstants.WATER_SHED:// 分水岭
                     imageSegmentationMaskPath = new WaterShedUtil().getMaskPath(imgUrl, x, y, width, height);
                     break;

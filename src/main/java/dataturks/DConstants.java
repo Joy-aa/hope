@@ -40,6 +40,8 @@ public class DConstants {
     public static final String GRAB_CUT = "grabcut";
     public static final String CANNY = "canny";
     public static final String THRESHOLD = "threshold";
+    public static final String OTSU = "otsu";
+    public static final String ADAPTIVE = "adaptive";
     public static final String WATER_SHED = "watershed";
     public static final String RegionGrow = "regiongrow";
     public static final String RegionSplitMerge = "regionsplitmerge";
