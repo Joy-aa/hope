@@ -362,7 +362,7 @@ public class Controlcenter {
                     if (model != null && model.equalsIgnoreCase(DConstants.DEFAULT_MODEL) && status == null) {
                         hitResults = AppConfig.getInstance().getdHitsResultDAO()
                                 .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
-                        getHits.addSigleHit(hit, hitResults, 1);
+                        getHits.addSigleHit(hit, hitResults, 0);
                     }
                     else if (model == null) {
                         // model 参数传递的是 correctResult 的值
@@ -371,7 +371,7 @@ public class Controlcenter {
                         // 封装数据
                         // 如果hitResults 的结果为空，返回结果不封装此记录
                         if (hitResults.size() != 0) {
-                            getHits.addSigleHit(hit, hitResults, 1);
+                            getHits.addSigleHit(hit, hitResults, 0);
                         }
                     }
                     else {
@@ -380,11 +380,11 @@ public class Controlcenter {
                                 .findByHitIdAndModelAndStatusInternal(hit.getId(), model, status);
                         // 如果 status 是 notDone，直接封装，因为这个状态，肯定没有 hitResults，但是前端需要这些数据
                         if (status != null && status.equalsIgnoreCase(DConstants.HIT_STATUS_NOT_DONE)) {
-                            getHits.addSigleHit(hit, hitResults, 1);
+                            getHits.addSigleHit(hit, hitResults, 0);
                         } else {
                             // 其他的status，如果hitResults 的结果为空，返回结果不封装此记录
                             if (hitResults.size() != 0) {
-                                getHits.addSigleHit(hit, hitResults, 1);
+                                getHits.addSigleHit(hit, hitResults, 0);
                             }
                         }
                     }

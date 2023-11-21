@@ -453,7 +453,7 @@ public class DataturksEndpoint {
             List<DHitsResult> hitResults = null;
             hitResults = AppConfig.getInstance().getdHitsResultDAO()
                     .findByHitIdAndCorrectResultInternal(hit.getId(), hit.getCorrectResult());
-            getHits.addSigleHit(hit, hitResults, 1);
+            getHits.addSigleHit(hit, hitResults, 0);
 
             return getHits;
         } catch (Exception e) {
