@@ -39,6 +39,7 @@ public class AlphaUtil implements BaseSegment{
 //            LOG.info("DstImagePath: " + dstUrl);
             Mat img = imread(imgUrl, -1);// 读取原始图片
             Mat dst = new Mat(img.rows(), img.cols(), CvType.CV_8UC1);
+            Mat dst_tmp = new Mat(img.rows(), img.cols(), CvType.CV_8UC1);
             if (img.empty()) {
                 throw new Exception("image is empty");
             }
@@ -64,12 +65,15 @@ public class AlphaUtil implements BaseSegment{
                         dst.put(i, j, 255);
                     else
                         dst.put(i, j, 0);
-//                    img.put(i, j, data);
+                    if(g != 0)
+                        dst_tmp.put(i, j, 255);
+                    else
+                        dst_tmp.put(i, j, 0);
                 }
             }
 //            img.put(0, 0, data);
             imwrite(dstUrl, dst);
-//            LOG.info("saveUrl:",dstUrl);
+            imwrite(imgUrl, dst_tmp);
             return "success";
         }
         catch (Exception e) {

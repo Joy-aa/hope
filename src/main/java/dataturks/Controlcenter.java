@@ -650,10 +650,10 @@ public class Controlcenter {
                             String tmpFile = Paths.get(tmpPath.toString(), newName).toString();
                             String dstFile = Paths.get(folderPath.toString(), newName).toString();
                             new AlphaUtil().getMaskPath(tmpFile, dstFile);
-                            File file1 = new File(tmpFile);
-                            file1.delete();
-                            File file2 = new File(tmpPath.toString());
-                            file2.delete();
+//                            File file1 = new File(tmpFile);
+//                            file1.delete();
+//                            File file2 = new File(tmpPath.toString());
+//                            file2.delete();
                         }
                     }
                 }
